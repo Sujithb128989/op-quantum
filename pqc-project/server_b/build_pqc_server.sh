@@ -4,15 +4,17 @@
 #
 # This script downloads and compiles all components for the PQC-enabled server (Server B).
 # It must be run from within the 'pqc-project/server_b/' directory.
-# The process is as follows:
-# 1. Download all source code.
-# 2. Compile and install liboqs (the PQC crypto library).
-# 3. Compile and install a standard OpenSSL 3.x.
-# 4. Compile and install oqs-provider, which plugs the liboqs algorithms into OpenSSL.
-# 5. Compile and install Nginx, linking it against our PQC-enabled OpenSSL.
 #
 
 set -e # Exit immediately if any command fails
+
+# --- Pre-flight Checks ---
+echo ">>> Verifying build environment..."
+command -v cmake >/dev/null 2>&1 || { echo >&2 "ERROR: 'cmake' not found. Please run the main setup script from the project root first."; exit 1; }
+command -v make >/dev/null 2>&1 || { echo >&2 "ERROR: 'make' not found. Please run the main setup script from the project root first."; exit 1; }
+command -v gcc >/dev/null 2>&1 || { echo >&2 "ERROR: 'gcc' not found. Please run the main setup script from the project root first."; exit 1; }
+echo ">>> Environment checks passed."
+
 
 # --- Configuration ---
 # Using specific commits/tags for reproducibility and compatibility.
@@ -29,11 +31,10 @@ NGINX_VERSION="1.25.3"
 NGINX_URL="https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
 
 # --- Directories ---
-# All work will be done in subdirectories of the current location (server_b)
 SRC_DIR="$(pwd)/src"
 BUILD_DIR="$(pwd)/build"
 INSTALL_DIR="$(pwd)/install"
-NGINX_INSTALL_DIR="$(pwd)/nginx" # Nginx will be installed here for easy access
+NGINX_INSTALL_DIR="$(pwd)/nginx"
 
 mkdir -p ${SRC_DIR} ${BUILD_DIR} ${INSTALL_DIR}
 
@@ -60,15 +61,17 @@ fi
 
 if [ ! -f "nginx-${NGINX_VERSION}.tar.gz" ]; then
     wget ${NGINX_URL}
-    tar -xzvf nginx-${NGINX_VERSION}.tar.gz
 fi
+# Remove old directory to ensure a clean build
+rm -rf nginx-${NGINX_VERSION}
+tar -xzvf nginx-${NGINX_VERSION}.tar.gz
 
 echo ">>> Source code downloaded successfully."
 
 # --- 2. Build and Install liboqs ---
 echo ">>> Step 2: Building and installing liboqs..."
 cd ${BUILD_DIR}
-mkdir -p liboqs
+rm -rf liboqs && mkdir -p liboqs
 cd liboqs
 cmake -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}/liboqs
 make -j$(nproc)
@@ -78,9 +81,8 @@ echo ">>> liboqs installed successfully."
 # --- 3. Build and Install OpenSSL ---
 echo ">>> Step 3: Building and installing OpenSSL..."
 cd ${BUILD_DIR}
-mkdir -p openssl
+rm -rf openssl && mkdir -p openssl
 cd openssl
-# For Windows/MinGW, we specify 'mingw64' as the configuration target.
 ${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}
 make -j$(nproc)
 make install
@@ -89,10 +91,8 @@ echo ">>> OpenSSL installed successfully."
 # --- 4. Build and Install OQS Provider ---
 echo ">>> Step 4: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
-mkdir -p oqs-provider
+rm -rf oqs-provider && mkdir -p oqs-provider
 cd oqs-provider
-# This cmake command tells the provider where to find the liboqs and OpenSSL installations.
-# It will then install the provider's library (oqs-provider.dll) into the OpenSSL provider directory.
 cmake -G "MinGW Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SRC_DIR}/oqs-provider
 make -j$(nproc)
 make install
@@ -100,12 +100,10 @@ echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
 # --- 5. Build and Install Nginx ---
 echo ">>> Step 5: Building and installing Nginx..."
-cd ${BUILD_DIR}
-mkdir -p nginx
-cd nginx
-# We point Nginx to the source code of our custom OpenSSL build.
-# MSYS2 should handle the paths for other dependencies like PCRE and zlib if they are installed.
-${SRC_DIR}/nginx-${NGINX_VERSION}/configure \
+cd ${SRC_DIR}/nginx-${NGINX_VERSION}
+
+# We run configure from within the source directory.
+./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-http_ssl_module \
     --with-openssl=${SRC_DIR}/openssl \
