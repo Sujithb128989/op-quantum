@@ -15,24 +15,15 @@ echo ">>> This may take a few minutes."
 echo ">>> Updating package database and base packages..."
 pacman -Syu --noconfirm
 
-# Install the necessary toolchains and packages.
-#
-# - mingw-w64-x86_64-toolchain: Contains the C/C++ compiler (gcc) and other tools
-#   needed to build 64-bit Windows applications.
-# - git: For cloning the source code from GitHub.
-# - cmake: A build system generator required by liboqs.
-# - python: Required for the Flask backend application and the attacker script.
-# - perl: Required by the OpenSSL configuration script.
-# - unzip: For decompressing source archives (like Nginx).
-#
-# Using --needed will skip installing packages that are already present and up to date.
-echo ">>> Installing required packages (gcc, make, git, cmake, python, perl)..."
+# Install the necessary toolchains and packages individually to avoid interactive prompts.
+echo ">>> Installing required packages..."
 pacman -S --needed --noconfirm \
-    mingw-w64-x86_64-toolchain \
+    mingw-w64-x86_64-gcc \
+    mingw-w64-x86_64-make \
     mingw-w64-x86_64-openssl \
     mingw-w64-x86_64-pcre \
     mingw-w64-x86_64-zlib \
-    mingw-w64-x86_64-wireshark-cli \
+    mingw-w64-x86_64-wireshark \
     git \
     cmake \
     python \
