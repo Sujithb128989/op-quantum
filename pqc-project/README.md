@@ -21,23 +21,23 @@ The demonstration follows a sequential narrative, first showcasing the secure ap
 
 ### Phase 1: Initial Project Setup
 
-These steps only need to be performed once.
+These steps only need to be performed once. **Please perform them in this exact order.**
 
 1.  **Install Dependencies:** Run the setup script to install all required compilers and tools.
     ```bash
     ./setup_msys2.sh
     ```
-2.  **Install Python Libraries:** Install the necessary Python packages for the backend and attacker scripts.
-    ```bash
-    pip install -r app/requirements.txt
-    pip install -r attacker/requirements.txt
-    ```
-3.  **Build Both Servers:** Compile the Nginx binaries for Server A and Server B. This will take a significant amount of time.
+2.  **Build Both Servers:** Compile the Nginx binaries and the underlying PQC libraries. This is a critical step that must be done before installing the Python packages. This will take a significant amount of time.
     ```bash
     (cd server_a && ./build_standard_server.sh)
     (cd server_b && ./build_pqc_server.sh)
     ```
-4.  **Generate Certificates:** Create the self-signed certificates for both servers.
+3.  **Install Python Libraries:** Now that the C libraries are built, install the necessary Python packages. The `oqs` package will correctly link against the libraries built in the previous step.
+    ```bash
+    pip install -r app/requirements.txt
+    pip install -r attacker/requirements.txt
+    ```
+4.  **Generate Certificates:** Create the self-signed certificates for both servers. This requires the PQC-enabled OpenSSL that was just built.
     ```bash
     ./generate_certs.sh
     ```
