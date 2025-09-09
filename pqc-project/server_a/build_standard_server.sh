@@ -2,14 +2,17 @@
 #
 # build_standard_server.sh
 #
-# This script downloads and compiles a standard version of Nginx (Server A).
-# It also downloads all required dependencies (OpenSSL, PCRE, Zlib) and builds them statically.
+# This script uses the "pre-compile dependencies" method. It first builds
+# and installs zlib, pcre, and openssl into a local directory. Then, it
+# builds Nginx against those pre-compiled libraries. This is the most
+# robust method for ensuring a successful build.
 #
 
 set -e # Exit immediately if any command fails
 
 # --- Configuration ---
 MAKE_CMD="mingw32-make"
+CMAKE_CMD="cmake"
 
 NGINX_VERSION="1.25.3"
 NGINX_URL="https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
@@ -20,43 +23,74 @@ PCRE_URL="https://sourceforge.net/projects/pcre/files/pcre/${PCRE_VERSION}/pcre-
 ZLIB_VERSION="1.3.1"
 ZLIB_URL="https://www.zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 
-
 # --- Directories ---
 SRC_DIR="$(pwd)/src"
+BUILD_DIR="$(pwd)/build"
+INSTALL_DIR="$(pwd)/install"
 NGINX_INSTALL_DIR="$(pwd)/nginx"
 
-mkdir -p ${SRC_DIR}
+mkdir -p ${SRC_DIR} ${BUILD_DIR} ${INSTALL_DIR}
 
 echo "=================================================="
 echo "Starting Standard Server (Server A) Build Process"
 echo "=================================================="
 
 # --- 1. Download Sources ---
-echo ">>> Step 1: Downloading all source code (Nginx, OpenSSL, PCRE, Zlib)..."
+echo ">>> Step 1: Downloading all source code..."
 cd ${SRC_DIR}
-
 if [ ! -d "openssl" ]; then git clone --depth 1 --branch ${OPENSSL_GIT_TAG} ${OPENSSL_GIT_URL}; fi
 if [ ! -f "nginx-${NGINX_VERSION}.tar.gz" ]; then wget ${NGINX_URL}; fi
-rm -rf nginx-${NGINX_VERSION} && tar -xzvf nginx-${NGINX_VERSION}.tar.gz
 if [ ! -f "pcre-${PCRE_VERSION}.tar.gz" ]; then wget -O pcre-${PCRE_VERSION}.tar.gz ${PCRE_URL}; fi
-rm -rf pcre-${PCRE_VERSION} && tar -xzvf pcre-${PCRE_VERSION}.tar.gz
 if [ ! -f "zlib-${ZLIB_VERSION}.tar.gz" ]; then wget ${ZLIB_URL}; fi
-rm -rf zlib-${ZLIB_VERSION} && tar -xzvf zlib-${ZLIB_VERSION}.tar.gz
-
 echo ">>> Source code downloaded successfully."
 
-# --- 2. Build and Install Nginx ---
-echo ">>> Step 2: Building and installing Nginx..."
-cd nginx-${NGINX_VERSION}
 
-# We point the configure script to the source directories of its dependencies.
-# This creates a static build that does not depend on system-installed libraries.
+# --- 2. Build and Install Zlib ---
+echo ">>> Step 2: Building and installing zlib..."
+cd ${BUILD_DIR}
+rm -rf zlib && mkdir zlib && cd zlib
+tar -xzvf ${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz --strip-components=1
+# For zlib on Windows, it's often better to use its own makefile for win32
+${MAKE_CMD} -f win32/Makefile.gcc
+# There is no 'make install' for this makefile, so we copy the files manually.
+cp zlib.h zconf.h ${INSTALL_DIR}/include
+cp zlib1.dll ${INSTALL_DIR}/bin
+cp libz.a ${INSTALL_DIR}/lib
+cp libz.dll.a ${INSTALL_DIR}/lib
+echo ">>> zlib installed successfully."
+
+
+# --- 3. Build and Install PCRE ---
+echo ">>> Step 3: Building and installing pcre..."
+cd ${BUILD_DIR}
+rm -rf pcre && mkdir pcre && cd pcre
+tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
+./configure --prefix=${INSTALL_DIR}
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+echo ">>> pcre installed successfully."
+
+
+# --- 4. Build and Install OpenSSL ---
+echo ">>> Step 4: Building and installing OpenSSL..."
+cd ${BUILD_DIR}
+rm -rf openssl && mkdir -p openssl && cd openssl
+${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+echo ">>> OpenSSL installed successfully."
+
+
+# --- 5. Build and Install Nginx ---
+echo ">>> Step 5: Building and installing Nginx..."
+cd ${BUILD_DIR}
+rm -rf nginx && mkdir nginx && cd nginx
+tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
+
+# Now we point configure to our custom installation directory for all dependencies.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
-    --with-http_ssl_module \
-    --with-openssl=../openssl \
-    --with-pcre=../pcre-${PCRE_VERSION} \
-    --with-zlib=../zlib-${ZLIB_VERSION}
+    --with-cc-opt="-I${INSTALL_DIR}/include" \
+    --with-ld-opt="-L${INSTALL_DIR}/lib" \
+    --with-http_ssl_module
 
 ${MAKE_CMD} -j$(nproc)
 ${MAKE_CMD} install
@@ -64,5 +98,4 @@ echo ">>> Nginx installed successfully."
 
 echo "=================================================="
 echo "Standard Server (Server A) Build Process COMPLETE"
-echo "Nginx is installed in: ${NGINX_INSTALL_DIR}"
 echo "=================================================="

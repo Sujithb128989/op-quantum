@@ -2,7 +2,10 @@
 #
 # build_pqc_server.sh
 #
-# This script downloads and compiles all components for the PQC-enabled server (Server B).
+# This script uses the "pre-compile dependencies" method. It first builds
+# and installs all dependencies (zlib, pcre, openssl, liboqs, oqs-provider)
+# into a local directory. Then, it builds Nginx against those pre-compiled
+# libraries. This is the most robust method for ensuring a successful build.
 #
 
 set -e # Exit immediately if any command fails
@@ -11,7 +14,6 @@ set -e # Exit immediately if any command fails
 MAKE_CMD="mingw32-make"
 CMAKE_CMD="cmake"
 
-# Using specific commits/tags for reproducibility and compatibility.
 LIBOQS_GIT_URL="https://github.com/open-quantum-safe/liboqs.git"
 LIBOQS_GIT_TAG="0.10.0"
 OQSPROVIDER_GIT_URL="https://github.com/open-quantum-safe/oqs-provider.git"
@@ -44,48 +46,66 @@ if [ ! -d "liboqs" ]; then git clone --depth 1 --branch ${LIBOQS_GIT_TAG} ${LIBO
 if [ ! -d "oqs-provider" ]; then git clone --depth 1 --branch ${OQSPROVIDER_GIT_TAG} ${OQSPROVIDER_GIT_URL}; fi
 if [ ! -d "openssl" ]; then git clone --depth 1 --branch ${OPENSSL_GIT_TAG} ${OPENSSL_GIT_URL}; fi
 if [ ! -f "nginx-${NGINX_VERSION}.tar.gz" ]; then wget ${NGINX_URL}; fi
-rm -rf nginx-${NGINX_VERSION} && tar -xzvf nginx-${NGINX_VERSION}.tar.gz
 if [ ! -f "pcre-${PCRE_VERSION}.tar.gz" ]; then wget -O pcre-${PCRE_VERSION}.tar.gz ${PCRE_URL}; fi
-rm -rf pcre-${PCRE_VERSION} && tar -xzvf pcre-${PCRE_VERSION}.tar.gz
 if [ ! -f "zlib-${ZLIB_VERSION}.tar.gz" ]; then wget ${ZLIB_URL}; fi
-rm -rf zlib-${ZLIB_VERSION} && tar -xzvf zlib-${ZLIB_VERSION}.tar.gz
 echo ">>> Source code downloaded successfully."
 
-# --- 2. Build and Install liboqs ---
-echo ">>> Step 2: Building and installing liboqs..."
+# --- 2. Build and Install Zlib ---
+echo ">>> Step 2: Building and installing zlib..."
 cd ${BUILD_DIR}
-rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}/liboqs
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
-echo ">>> liboqs installed successfully."
+rm -rf zlib && mkdir zlib && cd zlib
+tar -xzvf ${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz --strip-components=1
+${MAKE_CMD} -f win32/Makefile.gcc
+cp zlib.h zconf.h ${INSTALL_DIR}/include
+cp zlib1.dll ${INSTALL_DIR}/bin
+cp libz.a ${INSTALL_DIR}/lib
+cp libz.dll.a ${INSTALL_DIR}/lib
+echo ">>> zlib installed successfully."
 
-# --- 3. Build and Install OpenSSL ---
-echo ">>> Step 3: Building and installing OpenSSL..."
+# --- 3. Build and Install PCRE ---
+echo ">>> Step 3: Building and installing pcre..."
+cd ${BUILD_DIR}
+rm -rf pcre && mkdir pcre && cd pcre
+tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
+./configure --prefix=${INSTALL_DIR}
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+echo ">>> pcre installed successfully."
+
+# --- 4. Build and Install OpenSSL (Standard) ---
+echo ">>> Step 4: Building and installing OpenSSL..."
 cd ${BUILD_DIR}
 rm -rf openssl && mkdir -p openssl && cd openssl
 ${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> OpenSSL installed successfully."
 
-# --- 4. Build and Install OQS Provider ---
-echo ">>> Step 4: Building and installing oqs-provider..."
+# --- 5. Build and Install liboqs ---
+echo ">>> Step 5: Building and installing liboqs..."
+cd ${BUILD_DIR}
+rm -rf liboqs && mkdir -p liboqs && cd liboqs
+${CMAKE_CMD} -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}/liboqs
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+echo ">>> liboqs installed successfully."
+
+# --- 6. Build and Install OQS Provider ---
+echo ">>> Step 6: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
 rm -rf oqs-provider && mkdir -p oqs-provider && cd oqs-provider
 ${CMAKE_CMD} -G "MinGW Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SRC_DIR}/oqs-provider
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
-echo ">>> oqs-provider installed successfully."
+echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
-# --- 5. Build and Install Nginx ---
-echo ">>> Step 5: Building and installing Nginx..."
-cd ${SRC_DIR}/nginx-${NGINX_VERSION}
+# --- 7. Build and Install Nginx ---
+echo ">>> Step 7: Building and installing Nginx..."
+cd ${BUILD_DIR}
+rm -rf nginx && mkdir nginx && cd nginx
+tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
+# We point configure to our custom installation directory for all dependencies.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
-    --with-http_ssl_module \
-    --with-openssl=${SRC_DIR}/openssl \
-    --with-pcre=../pcre-${PCRE_VERSION} \
-    --with-zlib=../zlib-${ZLIB_VERSION} \
+    --with-cc-opt="-I${INSTALL_DIR}/include" \
     --with-ld-opt="-L${INSTALL_DIR}/lib" \
-    --with-cc-opt="-I${INSTALL_DIR}/include"
+    --with-http_ssl_module
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> Nginx installed successfully."
 
