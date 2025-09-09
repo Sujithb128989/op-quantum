@@ -8,6 +8,7 @@ def create_database():
     """
     Creates and initializes the SQLite database with the required schema
     and some dummy data for demonstration.
+    Version 1.1
     """
     db_path = os.path.join(os.getcwd(), DB_FILE)
 
