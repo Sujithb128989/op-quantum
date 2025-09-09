@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # build_standard_server.sh
+# Version 1.1
 #
 # This script downloads and compiles a standard version of Nginx (Server A).
 # It must be run from within the 'pqc-project/server_a/' directory.
