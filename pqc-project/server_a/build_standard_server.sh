@@ -29,7 +29,9 @@ BUILD_DIR="$(pwd)/build"
 INSTALL_DIR="$(pwd)/install"
 NGINX_INSTALL_DIR="$(pwd)/nginx"
 
-mkdir -p ${SRC_DIR} ${BUILD_DIR} ${INSTALL_DIR}
+mkdir -p ${SRC_DIR} ${BUILD_DIR}
+# Create all necessary subdirectories for the installation
+mkdir -p ${INSTALL_DIR}/include ${INSTALL_DIR}/lib ${INSTALL_DIR}/bin
 
 echo "=================================================="
 echo "Starting Standard Server (Server A) Build Process"
