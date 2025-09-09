@@ -26,6 +26,7 @@ pacman -S --noconfirm --needed \
     git \
     cmake \
     python \
+    mingw-w64-x86_64-python-pip \
     perl \
     unzip
 
