@@ -10,9 +10,10 @@
 set -e # Exit immediately if any command fails
 
 # --- Configuration ---
-# Using absolute paths for commands to bypass potential user PATH issues.
-MAKE_CMD="/mingw64/bin/make"
-CMAKE_CMD="/mingw64/bin/cmake"
+# In some MSYS2 environments, 'make' is renamed to 'mingw32-make'.
+MAKE_CMD="mingw32-make"
+# We can rely on the PATH for cmake, as the doctor script confirmed it works.
+CMAKE_CMD="cmake"
 
 # Using specific commits/tags for reproducibility and compatibility.
 LIBOQS_GIT_URL="https://github.com/open-quantum-safe/liboqs.git"

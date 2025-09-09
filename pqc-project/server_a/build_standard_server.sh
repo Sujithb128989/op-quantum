@@ -10,8 +10,8 @@
 set -e # Exit immediately if any command fails
 
 # --- Configuration ---
-# Using an absolute path for 'make' to bypass potential user PATH issues.
-MAKE_CMD="/mingw64/bin/make"
+# In some MSYS2 environments, 'make' is renamed to 'mingw32-make'.
+MAKE_CMD="mingw32-make"
 
 NGINX_VERSION="1.25.3"
 NGINX_URL="https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
