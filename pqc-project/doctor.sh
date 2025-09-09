@@ -21,12 +21,13 @@ check_command() {
     if command -v "$cmd_name" >/dev/null 2>&1; then
         status="OK"
         path_info="($(command -v "$cmd_name"))"
+        printf "%-10s | %-20s | %s\n" "$cmd_name" "$status" "$path_info"
         return 0
     else
         status="ERROR: NOT FOUND"
+        printf "%-10s | %-20s | %s\n" "$cmd_name" "$status" "$path_info"
         return 1
     fi
-    printf "%-10s | %-20s | %s\n" "$cmd_name" "$status" "$path_info"
 }
 
 # --- Main Checks ---
@@ -34,17 +35,17 @@ all_ok=true
 printf "%-10s | %-20s | %s\n" "COMMAND" "STATUS" "PATH"
 echo "--------------------------------------------------------------"
 
-if ! check_command "gcc"; then all_ok=false; fi
-if ! check_command "make"; then all_ok=false; fi
-if ! check_command "cmake"; then all_ok=false; fi
-if ! check_command "python"; then all_ok=false; fi
-if ! check_command "pip"; then all_ok=false; fi
-if ! check_command "rustc"; then all_ok=false; fi
-if ! check_command "git"; then all_ok=false; fi
-if ! check_command "wget"; then all_ok=false; fi
-if ! check_command "tar"; then all_ok=false; fi
-if ! check_command "unzip"; then all_ok=false; fi
-if ! check_command "perl"; then all_ok=false; fi
+check_command "gcc" || all_ok=false
+check_command "make" || all_ok=false
+check_command "cmake" || all_ok=false
+check_command "python" || all_ok=false
+check_command "pip" || all_ok=false
+check_command "rustc" || all_ok=false
+check_command "git" || all_ok=false
+check_command "wget" || all_ok=false
+check_command "tar" || all_ok=false
+check_command "unzip" || all_ok=false
+check_command "perl" || all_ok=false
 
 echo "--------------------------------------------------------------"
 echo
