@@ -27,6 +27,7 @@ These steps only need to be performed once. **Please perform them in this exact 
     ```bash
     ./setup_msys2.sh
     ```
+    **IMPORTANT:** After this script finishes, you **MUST close and reopen** the MSYS2 terminal before proceeding to the next step. This allows the terminal to recognize the newly installed programs.
 2.  **Build Both Servers:** Compile the Nginx binaries and the underlying PQC libraries. This is a critical step that must be done before installing the Python packages. This will take a significant amount of time.
     ```bash
     (cd server_a && ./build_standard_server.sh)
