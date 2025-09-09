@@ -28,6 +28,7 @@ pacman -S --noconfirm --needed \
     python \
     mingw-w64-x86_64-python-pip \
     mingw-w64-x86_64-rust \
+    diffutils \
     perl \
     unzip
 
