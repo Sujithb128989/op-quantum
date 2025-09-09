@@ -33,10 +33,10 @@ These steps only need to be performed once. **Please perform them in this exact 
     (cd server_a && ./build_standard_server.sh)
     (cd server_b && ./build_pqc_server.sh)
     ```
-3.  **Install Python Libraries:** Now that the C libraries are built, install the necessary Python packages. The `oqs` package will correctly link against the libraries built in the previous step.
+2.  **Install Python Libraries:** Install the necessary Python packages. We use an absolute path to the python executable to avoid `PATH` issues.
     ```bash
-    pip install -r app/requirements.txt
-    pip install -r attacker/requirements.txt
+    /mingw64/bin/python -m pip install -r app/requirements.txt
+    /mingw64/bin/python -m pip install -r attacker/requirements.txt
     ```
 4.  **Generate Certificates:** Create the self-signed certificates for both servers. This requires the PQC-enabled OpenSSL that was just built.
     ```bash
