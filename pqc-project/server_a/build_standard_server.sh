@@ -3,19 +3,15 @@
 # build_standard_server.sh
 #
 # This script downloads and compiles a standard version of Nginx (Server A).
-# It links against the default OpenSSL library available in the MSYS2 environment.
 # It must be run from within the 'pqc-project/server_a/' directory.
 #
 
 set -e # Exit immediately if any command fails
 
-# --- Pre-flight Checks ---
-echo ">>> Verifying build environment..."
-command -v make >/dev/null 2>&1 || { echo >&2 "ERROR: 'make' not found. Please run the main setup script from the project root first."; exit 1; }
-command -v gcc >/dev/null 2>&1 || { echo >&2 "ERROR: 'gcc' not found. Please run the main setup script from the project root first."; exit 1; }
-echo ">>> Environment checks passed."
-
 # --- Configuration ---
+# Using an absolute path for 'make' to bypass potential user PATH issues.
+MAKE_CMD="/mingw64/bin/make"
+
 NGINX_VERSION="1.25.3"
 NGINX_URL="https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
 
@@ -47,14 +43,12 @@ echo ">>> Step 2: Building and installing Nginx..."
 cd nginx-${NGINX_VERSION}
 
 # We run configure from within the source directory. This is a more robust method.
-# We do NOT specify --with-openssl, so Nginx will find the system default.
-# The setup_msys2.sh script must have installed the 'mingw-w64-x86_64-openssl' package.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-http_ssl_module
 
-make -j$(nproc)
-make install
+${MAKE_CMD} -j$(nproc)
+${MAKE_CMD} install
 echo ">>> Nginx installed successfully."
 
 echo "=================================================="
