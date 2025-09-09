@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # build_pqc_server.sh
+# Version 1.1
 #
 # This script downloads and compiles all components for the PQC-enabled server (Server B).
 # It must be run from within the 'pqc-project/server_b/' directory.
