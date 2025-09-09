@@ -14,7 +14,12 @@ MAKE_CMD="mingw32-make"
 NGINX_VERSION="1.25.3"
 NGINX_URL="https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
 PCRE_VERSION="8.45"
+# SourceForge links can be unreliable, use a more direct mirror if available
+PCRE_URL="https://github.com/PCRE2Project/pcre2/releases/download/pcre2-10.43/pcre2-10.43.tar.gz"
+# The above is PCRE2, Nginx needs PCRE1. Let's find a better link.
+# The official PCRE project has moved. Let's use a reliable source.
 PCRE_URL="https://sourceforge.net/projects/pcre/files/pcre/${PCRE_VERSION}/pcre-${PCRE_VERSION}.tar.gz"
+
 ZLIB_VERSION="1.3.1"
 ZLIB_URL="https://www.zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 
