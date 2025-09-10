@@ -30,7 +30,8 @@ pacman -S --noconfirm --needed \
     mingw-w64-x86_64-rust \
     diffutils \
     perl \
-    unzip
+    unzip \
+    ninja
 
 echo "=============================================================="
 echo ">>> Dependency installation complete!"

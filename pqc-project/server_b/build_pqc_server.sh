@@ -85,18 +85,18 @@ echo ">>> OpenSSL installed successfully."
 echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ${SRC_DIR}/liboqs
-if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for liboqs." >&2; exit 1; fi
-if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for liboqs." >&2; exit 1; fi
+${CMAKE_CMD} -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ${SRC_DIR}/liboqs
+if ! ninja; then echo "ERROR: ninja build failed for liboqs." >&2; exit 1; fi
+if ! ninja install; then echo "ERROR: ninja install failed for liboqs." >&2; exit 1; fi
 echo ">>> liboqs installed successfully."
 
 # --- 6. Build and Install OQS Provider ---
 echo ">>> Step 6: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
 rm -rf oqs-provider && mkdir -p oqs-provider && cd oqs-provider
-${CMAKE_CMD} -G "Unix Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${SRC_DIR}/oqs-provider
-if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for oqs-provider." >&2; exit 1; fi
-if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for oqs-provider." >&2; exit 1; fi
+${CMAKE_CMD} -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${SRC_DIR}/oqs-provider
+if ! ninja; then echo "ERROR: ninja build failed for oqs-provider." >&2; exit 1; fi
+if ! ninja install; then echo "ERROR: ninja install failed for oqs-provider." >&2; exit 1; fi
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
 # --- 7. Build and Install Nginx ---
