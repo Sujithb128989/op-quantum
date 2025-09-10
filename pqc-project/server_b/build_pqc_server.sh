@@ -83,7 +83,7 @@ echo ">>> OpenSSL installed successfully."
 echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF ${SRC_DIR}/liboqs
+${CMAKE_CMD} -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF -DCMAKE_EXE_LINKER_FLAGS="-lws2_32" ${SRC_DIR}/liboqs
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> liboqs installed successfully."
 
