@@ -55,7 +55,7 @@ echo ">>> Step 2: Building and installing zlib..."
 cd ${BUILD_DIR}
 rm -rf zlib && mkdir zlib && cd zlib
 tar -xzvf ${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz --strip-components=1
-${MAKE_CMD} -f win32/Makefile.gcc
+if ! ${MAKE_CMD} -f win32/Makefile.gcc; then echo "ERROR: make failed for zlib." >&2; exit 1; fi
 cp zlib.h zconf.h ${INSTALL_DIR}/include
 cp zlib1.dll ${INSTALL_DIR}/bin
 cp libz.a ${INSTALL_DIR}/lib
@@ -68,7 +68,8 @@ cd ${BUILD_DIR}
 rm -rf pcre && mkdir pcre && cd pcre
 tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
 ./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared --disable-dependency-tracking
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for pcre." >&2; exit 1; fi
+if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for pcre." >&2; exit 1; fi
 echo ">>> pcre installed successfully."
 
 # --- 4. Build and Install OpenSSL (Standard) ---
@@ -76,7 +77,8 @@ echo ">>> Step 4: Building and installing OpenSSL..."
 cd ${BUILD_DIR}
 rm -rf openssl && mkdir -p openssl && cd openssl
 ${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} no-shared
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install_sw
+if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for OpenSSL." >&2; exit 1; fi
+if ! ${MAKE_CMD} install_sw; then echo "ERROR: make install_sw failed for OpenSSL." >&2; exit 1; fi
 echo ">>> OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
@@ -84,7 +86,8 @@ echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
 ${CMAKE_CMD} -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ${SRC_DIR}/liboqs
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for liboqs." >&2; exit 1; fi
+if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for liboqs." >&2; exit 1; fi
 echo ">>> liboqs installed successfully."
 
 # --- 6. Build and Install OQS Provider ---
@@ -92,7 +95,8 @@ echo ">>> Step 6: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
 rm -rf oqs-provider && mkdir -p oqs-provider && cd oqs-provider
 ${CMAKE_CMD} -G "Unix Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${SRC_DIR}/oqs-provider
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for oqs-provider." >&2; exit 1; fi
+if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for oqs-provider." >&2; exit 1; fi
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
 # --- 7. Build and Install Nginx ---
@@ -111,8 +115,8 @@ tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
     --with-pcre=${BUILD_DIR}/pcre \
     --with-zlib=${BUILD_DIR}/zlib \
     --with-openssl=${SRC_DIR}/openssl
-${MAKE_CMD} -j$(nproc)
-${MAKE_CMD} install
+if ! ${MAKE_CMD} -j$(nproc); then echo "ERROR: make failed for Nginx." >&2; exit 1; fi
+if ! ${MAKE_CMD} install; then echo "ERROR: make install failed for Nginx." >&2; exit 1; fi
 echo ">>> Nginx installed successfully."
 
 echo "=================================================="
