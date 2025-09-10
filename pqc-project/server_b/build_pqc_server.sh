@@ -83,7 +83,7 @@ echo ">>> OpenSSL installed successfully."
 echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF ${SRC_DIR}/liboqs
+${CMAKE_CMD} -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF ${SRC_DIR}/liboqs
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> liboqs installed successfully."
 
@@ -91,7 +91,7 @@ echo ">>> liboqs installed successfully."
 echo ">>> Step 6: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
 rm -rf oqs-provider && mkdir -p oqs-provider && cd oqs-provider
-${CMAKE_CMD} -G "MinGW Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SRC_DIR}/oqs-provider
+${CMAKE_CMD} -G "Unix Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SRC_DIR}/oqs-provider
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
