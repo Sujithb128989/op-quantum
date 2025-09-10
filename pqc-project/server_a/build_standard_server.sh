@@ -11,7 +11,7 @@
 set -e # Exit immediately if any command fails
 
 # --- Configuration ---
-MAKE_CMD="mingw32-make"
+MAKE_CMD="make"
 CMAKE_CMD="cmake"
 
 NGINX_VERSION="1.25.3"
