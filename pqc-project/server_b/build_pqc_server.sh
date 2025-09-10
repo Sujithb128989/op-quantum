@@ -85,7 +85,7 @@ echo ">>> OpenSSL installed successfully."
 echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTING=OFF ${SRC_DIR}/liboqs
+${CMAKE_CMD} -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=ON -DBUILD_TESTING=OFF ${SRC_DIR}/liboqs
 if ! ninja; then echo "ERROR: ninja build failed for liboqs." >&2; exit 1; fi
 if ! ninja install; then echo "ERROR: ninja install failed for liboqs." >&2; exit 1; fi
 echo ">>> liboqs installed successfully."
