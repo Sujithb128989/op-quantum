@@ -52,9 +52,9 @@ echo ">>> Step 2: Building and installing zlib..."
 cd ${BUILD_DIR}
 rm -rf zlib && mkdir zlib && cd zlib
 tar -xzvf ${SRC_DIR}/zlib-${ZLIB_VERSION}.tar.gz --strip-components=1
-# For zlib on Windows, it's often better to use its own makefile for win32
+# For zlib on Windows, we use its own makefile for win32
 ${MAKE_CMD} -f win32/Makefile.gcc
-# There is no 'make install' for this makefile, so we copy the files manually.
+# Manually copy the files to our local install directory
 cp zlib.h zconf.h ${INSTALL_DIR}/include
 cp zlib1.dll ${INSTALL_DIR}/bin
 cp libz.a ${INSTALL_DIR}/lib
@@ -67,7 +67,7 @@ echo ">>> Step 3: Building and installing pcre..."
 cd ${BUILD_DIR}
 rm -rf pcre && mkdir pcre && cd pcre
 tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
-./configure --prefix=${INSTALL_DIR}
+./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> pcre installed successfully."
 
@@ -76,8 +76,9 @@ echo ">>> pcre installed successfully."
 echo ">>> Step 4: Building and installing OpenSSL..."
 cd ${BUILD_DIR}
 rm -rf openssl && mkdir -p openssl && cd openssl
-${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+# Configure with our install directory as the prefix
+${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} no-shared
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install_sw
 echo ">>> OpenSSL installed successfully."
 
 
@@ -88,6 +89,7 @@ rm -rf nginx && mkdir nginx && cd nginx
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
 
 # Now we point configure to our custom installation directory for all dependencies.
+# This ensures it finds the headers and libraries we just built.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
