@@ -94,7 +94,10 @@ tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
     --with-ld-opt="-L${INSTALL_DIR}/lib" \
-    --with-http_ssl_module
+    --with-http_ssl_module \
+    --with-pcre=${BUILD_DIR}/pcre \
+    --with-zlib=${BUILD_DIR}/zlib \
+    --with-openssl=${SRC_DIR}/openssl
 
 ${MAKE_CMD} -j$(nproc)
 ${MAKE_CMD} install
