@@ -67,7 +67,7 @@ echo ">>> Step 3: Building and installing pcre..."
 cd ${BUILD_DIR}
 rm -rf pcre && mkdir pcre && cd pcre
 tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
-./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared
+./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared --disable-dependency-tracking
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> pcre installed successfully."
 
