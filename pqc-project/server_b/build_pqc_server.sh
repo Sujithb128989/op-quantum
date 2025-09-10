@@ -91,7 +91,7 @@ echo ">>> liboqs installed successfully."
 echo ">>> Step 6: Building and installing oqs-provider..."
 cd ${BUILD_DIR}
 rm -rf oqs-provider && mkdir -p oqs-provider && cd oqs-provider
-${CMAKE_CMD} -G "Unix Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} ${SRC_DIR}/oqs-provider
+${CMAKE_CMD} -G "Unix Makefiles" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_PREFIX_PATH=${INSTALL_DIR} -DCMAKE_POLICY_VERSION_MINIMUM=3.5 ${SRC_DIR}/oqs-provider
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
