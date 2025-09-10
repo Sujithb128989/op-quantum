@@ -3,9 +3,8 @@
 # build_pqc_server.sh
 #
 # This script uses the "pre-compile dependencies" method. It first builds
-# and installs all dependencies (zlib, pcre, openssl, liboqs, oqs-provider)
-# into a local directory. Then, it builds Nginx against those pre-compiled
-# libraries. This is the most robust method for ensuring a successful build.
+# and installs all dependencies into a local directory, then builds Nginx
+# against those pre-compiled libraries. This is the most robust method.
 #
 
 set -e # Exit immediately if any command fails
@@ -34,7 +33,6 @@ INSTALL_DIR="$(pwd)/install"
 NGINX_INSTALL_DIR="$(pwd)/nginx"
 
 mkdir -p ${SRC_DIR} ${BUILD_DIR}
-# Create all necessary subdirectories for the installation
 mkdir -p ${INSTALL_DIR}/include ${INSTALL_DIR}/lib ${INSTALL_DIR}/bin
 
 echo "=================================================="
@@ -69,7 +67,7 @@ echo ">>> Step 3: Building and installing pcre..."
 cd ${BUILD_DIR}
 rm -rf pcre && mkdir pcre && cd pcre
 tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
-./configure --prefix=${INSTALL_DIR}
+./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> pcre installed successfully."
 
@@ -77,15 +75,15 @@ echo ">>> pcre installed successfully."
 echo ">>> Step 4: Building and installing OpenSSL..."
 cd ${BUILD_DIR}
 rm -rf openssl && mkdir -p openssl && cd openssl
-${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+${SRC_DIR}/openssl/Configure mingw64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} no-shared
+${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install_sw
 echo ">>> OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
 echo ">>> Step 5: Building and installing liboqs..."
 cd ${BUILD_DIR}
 rm -rf liboqs && mkdir -p liboqs && cd liboqs
-${CMAKE_CMD} -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} ${SRC_DIR}/liboqs
+${CMAKE_CMD} -G "MinGW Makefiles" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -DBUILD_SHARED_LIBS=OFF ${SRC_DIR}/liboqs
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> liboqs installed successfully."
 
@@ -108,7 +106,8 @@ tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
     --with-cc-opt="-I${INSTALL_DIR}/include" \
     --with-ld-opt="-L${INSTALL_DIR}/lib" \
     --with-http_ssl_module
-${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
+${MAKE_CMD} -j$(nproc)
+${MAKE_CMD} install
 echo ">>> Nginx installed successfully."
 
 echo "=================================================="
