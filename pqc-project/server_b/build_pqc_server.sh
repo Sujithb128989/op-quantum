@@ -10,7 +10,7 @@
 set -e # Exit immediately if any command fails
 
 # --- Configuration ---
-MAKE_CMD="mingw32-make"
+MAKE_CMD="make"
 CMAKE_CMD="cmake"
 
 LIBOQS_GIT_URL="https://github.com/open-quantum-safe/liboqs.git"
@@ -67,7 +67,7 @@ echo ">>> Step 3: Building and installing pcre..."
 cd ${BUILD_DIR}
 rm -rf pcre && mkdir pcre && cd pcre
 tar -xzvf ${SRC_DIR}/pcre-${PCRE_VERSION}.tar.gz --strip-components=1
-./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared
+./configure --prefix=${INSTALL_DIR} --enable-static --disable-shared --disable-dependency-tracking
 ${MAKE_CMD} -j$(nproc) && ${MAKE_CMD} install
 echo ">>> pcre installed successfully."
 
@@ -101,11 +101,16 @@ cd ${BUILD_DIR}
 rm -rf nginx && mkdir nginx && cd nginx
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz --strip-components=1
 # We point configure to our custom installation directory for all dependencies.
+# We point configure to our custom installation directory for all dependencies.
+# We also have to explicitly point to the source directories for Nginx to find them.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
     --with-ld-opt="-L${INSTALL_DIR}/lib" \
-    --with-http_ssl_module
+    --with-http_ssl_module \
+    --with-pcre=${BUILD_DIR}/pcre \
+    --with-zlib=${BUILD_DIR}/zlib \
+    --with-openssl=${SRC_DIR}/openssl
 ${MAKE_CMD} -j$(nproc)
 ${MAKE_CMD} install
 echo ">>> Nginx installed successfully."
