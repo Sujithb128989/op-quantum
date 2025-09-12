@@ -2,7 +2,7 @@
 #
 # doctor.sh
 #
-# This script checks the local MSYS2 environment to ensure all necessary
+# This script checks the local Linux environment to ensure all necessary
 # build tools are installed and available in the system's PATH.
 #
 
@@ -38,9 +38,9 @@ echo "--------------------------------------------------------------"
 check_command "gcc" || all_ok=false
 check_command "make" || all_ok=false
 check_command "cmake" || all_ok=false
-check_command "python" || all_ok=false
-check_command "pip" || all_ok=false
-check_command "rustc" || all_ok=false
+check_command "ninja" || all_ok=false
+check_command "python3" || all_ok=false
+check_command "pip3" || all_ok=false
 check_command "git" || all_ok=false
 check_command "wget" || all_ok=false
 check_command "tar" || all_ok=false
@@ -63,10 +63,10 @@ if [ "$all_ok" = true ]; then
     echo ">>> You should be able to proceed with the setup and build."
 else
     echo ">>> ERROR: One or more required commands were not found."
-    echo ">>> This indicates that './setup_msys2.sh' did not complete successfully,"
-    echo ">>> or you have not restarted your terminal after running it."
-    echo ">>> Please ensure the setup script runs without errors, then close and"
-    echo ">>> reopen your MSYS2 MINGW64 terminal and run this doctor script again."
+    echo ">>> This indicates that './setup_kali.sh' did not complete successfully,"
+    echo ">>> or you need to open a new terminal for the changes to take effect."
+    echo ">>> Please ensure the setup script runs without errors, then open a new"
+    echo ">>> terminal session and run this doctor script again."
 fi
 
 echo "=============================================================="
