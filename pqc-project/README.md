@@ -50,24 +50,26 @@ These steps only need to be performed once.
 
 ### Phase 2: Running the Demonstration
 
-For the demonstration, you will need **four separate terminal windows** open at the `pqc-project` root directory on your Kali machine.
+For the demonstration, you will need **three separate terminal windows** open at the `pqc-project` root directory on your Kali machine.
 
-**Terminal 1 & 2: Start the Servers**
-1.  **Activate the Python Environment** in both terminals: `source venv/bin/activate`
-2.  **In Terminal 1, start the VULNERABLE Server A:** `./start_server_a.sh`
-3.  **In Terminal 2, start the SECURE Server B:** `./start_server_b.sh`
-
-**Terminal 3: Launch the User Application**
-1.  **Activate the Python Environment:** `source venv/bin/activate`
-2.  **Launch the main web application:** `python3 app/app.py`
-    *(This starts the UI on `http://127.0.0.1:5000`)*
-
-**Terminal 4 (or External Machine): Run the Test Scripts**
-1.  **Find your Kali Linux IP Address:** You will need this if you are testing from a different machine. In a terminal on your Kali machine, run:
+**Terminal 1: Start the VULNERABLE Server A**
+1.  Activate the Python Environment: `source venv/bin/activate`
+2.  Run the start script. This will launch both Nginx and the backend app.
     ```bash
-    hostname -I
+    ./start_server_a.sh
     ```
-    *(This will print your IP address, for example: `172.28.11.123`)*
+    *This terminal will now be occupied by the Python backend for Server A.*
+
+**Terminal 2: Start the SECURE Server B**
+1.  Activate the Python Environment: `source venv/bin/activate`
+2.  Run the start script.
+    ```bash
+    ./start_server_b.sh
+    ```
+    *This terminal will now be occupied by the Python backend for Server B.*
+
+**Terminal 3 (or External Machine): Run the Test Scripts**
+1.  **Find your Kali Linux IP Address:** You will need this if you are testing from a different machine. In a terminal on your Kali machine, run: `hostname -I`
 2.  **Activate the Python Environment** (if running locally): `source venv/bin/activate`
 3.  **Follow the test narrative below**, replacing `<YOUR_KALI_IP>` with the address from the previous step.
 
@@ -75,27 +77,27 @@ For the demonstration, you will need **four separate terminal windows** open at 
 
 ### Phase 3: The Demonstration Narrative
 
-#### 1. Input Validation Test on Server A
+#### 1. SQL Injection on Server A
 
-*   **Goal:** Demonstrate the effect of improper server-side input validation.
+*   **Goal:** Steal all user data from the database via the vulnerable search function.
 *   **Action:** Run the validation test script against Server A's full URL.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
     python3 attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
     ```
-*   **Expected Outcome:** The script will retrieve more data than intended.
+*   **Expected Outcome:** The script will succeed and print the usernames and password hashes of all users.
 
-#### 2. High-Traffic Test on Server A
+#### 2. High-Traffic Test on Server A ("Hard Crash")
 
-*   **Goal:** Observe server performance under a high-traffic load.
+*   **Goal:** Demonstrate the server crashing completely after being overwhelmed by requests.
 *   **Action:** Run the load testing script against Server A's URL.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/
+    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
     ```
-*   **Expected Outcome:** The server will become unresponsive as it fails to handle the volume of requests.
+*   **Expected Outcome:** The script will flood the server with traffic. After approximately 5,000 requests are processed by the backend, the Python application will **terminate the Nginx process**. You will see the `start_server_a.sh` script exit in Terminal 1, confirming the server has "gone down instantly".
 
-#### 3. Input Validation Test on Server B
+#### 3. SQL Injection on Server B
 
 *   **Goal:** Show that the secure server correctly validates user input.
 *   **Action:** Run the same validation test script against Server B's URL.
@@ -108,16 +110,16 @@ For the demonstration, you will need **four separate terminal windows** open at 
 #### 4. PQC-Encrypted Messaging on Server B
 
 *   **Goal:** Demonstrate that messages are protected at-rest using PQC.
-*   **Action:** Use a web browser on your Windows host machine to navigate to the UI at `http://<YOUR_KALI_IP>:5000`. Send messages between two users (e.g., `alice` and `bob`) with Server B selected as the backend.
+*   **Action:** Use a web browser on your Windows host machine to navigate to the UI at `http://<YOUR_KALI_IP>:5000`. Send messages between two users with Server B selected as the backend.
 *   **Verification:** Examine the `messages` table in the `database.db` file.
 *   **Expected Outcome:** The message content will be stored as unreadable binary data.
 
-#### 5. High-Traffic Test on Server B
+#### 5. High-Traffic Test on Server B ("Hard Crash")
 
-*   **Goal:** Observe the PQC server's performance under the same high-traffic load.
+*   **Goal:** Demonstrate the secure server also crashing when overwhelmed.
 *   **Action:** Run the load testing script against Server B.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/
+    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
     ```
-*   **Expected Outcome:** The server will become unresponsive. This demonstrates that PQC protects against cryptographic threats, but not against network-level traffic floods.
+*   **Expected Outcome:** The same as Server A. After ~5,000 requests, the Python backend will terminate the Nginx process, and the script in Terminal 2 will exit. This demonstrates that PQC protects against cryptographic attacks, but not against application-level logic bombs or high-traffic conditions.

@@ -2,6 +2,9 @@ import sqlite3
 import hashlib
 import argparse
 import os
+import signal
+import sys
+import threading
 from flask import Flask, request, session, redirect, url_for, render_template, g, jsonify
 
 # --- Local Imports ---
@@ -9,14 +12,35 @@ from pqc_crypto import PQCrypto
 
 # --- Application Setup ---
 app = Flask(__name__)
-# A secret key is needed for Flask session management
 app.secret_key = os.urandom(24)
 
 # --- Global Configuration ---
 APP_MODE = "secure"
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database.db')
-# This will be initialized in 'secure' mode
 pqc_crypto_instance = None
+NGINX_PID_FILE = None
+REQUEST_COUNT = 0
+REQUEST_LIMIT = 5000
+counter_lock = threading.Lock()
+
+# --- Crash Logic ---
+@app.before_request
+def check_request_limit():
+    global REQUEST_COUNT
+    if NGINX_PID_FILE:
+        with counter_lock:
+            REQUEST_COUNT += 1
+            if REQUEST_COUNT >= REQUEST_LIMIT:
+                try:
+                    with open(NGINX_PID_FILE, 'r') as f:
+                        pid = int(f.read().strip())
+                    print(f"!!!!!! Request limit of {REQUEST_LIMIT} reached. Terminating Nginx (PID: {pid})... !!!!!!", file=sys.stderr)
+                    os.kill(pid, signal.SIGKILL)
+                except Exception as e:
+                    print(f"!!!!!! Could not terminate Nginx process: {e} !!!!!!", file=sys.stderr)
+            elif REQUEST_COUNT % 100 == 0:
+                print(f"[INFO] Request count: {REQUEST_COUNT}/{REQUEST_LIMIT}", file=sys.stderr)
+
 
 # --- Database Helper ---
 def get_db():
@@ -106,18 +130,9 @@ def search():
         db = get_db()
 
         if APP_MODE == "vulnerable":
-            # --------------------------------------------------------------------------
-            # WARNING: INTENTIONALLY VULNERABLE TO SQL INJECTION FOR DEMO PURPOSES
-            # This code directly concatenates user input into an SQL query, which is
-            # a classic SQL Injection vulnerability.
-            # DO NOT USE THIS PATTERN IN ANY REAL-WORLD APPLICATION.
-            # --------------------------------------------------------------------------
             query = f"SELECT username FROM users WHERE username LIKE '%{search_term}%'"
             results = db.execute(query).fetchall()
         else: # secure mode
-            # In secure mode, we use a parameterized query. The '?' placeholder
-            # ensures that the user input is treated as a value, not as part of
-            # the SQL command, preventing SQL Injection.
             query = "SELECT username FROM users WHERE username LIKE ?"
             results = db.execute(query, ('%' + search_term + '%',)).fetchall()
 
@@ -138,12 +153,9 @@ def search():
 def messaging():
     if 'username' not in session:
         return redirect(url_for('login'))
-    # The main messaging interface is rendered here.
-    # All dynamic data is loaded by the JavaScript file.
     return render_template('messaging.html')
 
 # --- API Endpoints for Messaging GUI ---
-
 @app.route('/api/get_current_user')
 def get_current_user():
     if 'username' not in session:
@@ -162,90 +174,68 @@ def get_users():
 def get_messages():
     if 'username' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-
     recipient = request.args.get('recipient')
     if not recipient:
         return jsonify({'error': 'Recipient not specified'}), 400
-
     db = get_db()
     current_user = session['username']
-
-    messages_query = """
-    SELECT sender, recipient, message_text, encrypted_key, timestamp FROM messages
-    WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?)
-    ORDER BY timestamp DESC
-    """
+    messages_query = "SELECT sender, recipient, message_text, encrypted_key, timestamp FROM messages WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) ORDER BY timestamp DESC"
     messages_rows = db.execute(messages_query, (current_user, recipient, recipient, current_user)).fetchall()
-
     messages = []
     for row in messages_rows:
         message_data = dict(row)
-
         if APP_MODE == 'secure' and message_data['encrypted_key'] is not None:
-            # --- PQC DECRYPTION ---
             try:
                 decrypted_text = pqc_crypto_instance.decrypt(message_data['encrypted_key'], message_data['message_text'])
                 message_data['message_text'] = decrypted_text.decode('utf-8', 'replace')
             except Exception:
                 message_data['message_text'] = "[Decryption Error: Unable to read message]"
         else:
-            # Handle as plaintext if not secure mode or no encrypted key
             if isinstance(message_data['message_text'], bytes):
                 message_data['message_text'] = message_data['message_text'].decode('utf-8', 'replace')
-
         messages.append(message_data)
-
     return jsonify(messages)
-
 
 @app.route('/api/send_message', methods=['POST'])
 def send_message():
     if 'username' not in session:
         return jsonify({'error': 'Not logged in'}), 401
-
     data = request.get_json()
     recipient = data.get('recipient')
     message_text = data.get('message_text')
-
     if not recipient or not message_text:
         return jsonify({'error': 'Missing recipient or message text'}), 400
-
     db = get_db()
     sender = session['username']
-
     encrypted_key = None
     final_message_text = message_text.encode('utf-8')
-
     if APP_MODE == 'secure':
-        # --- PQC ENCRYPTION ---
         encrypted_key, final_message_text = pqc_crypto_instance.encrypt(final_message_text)
-
-    db.execute(
-        "INSERT INTO messages (sender, recipient, message_text, encrypted_key) VALUES (?, ?, ?, ?)",
-        (sender, recipient, final_message_text, encrypted_key)
-    )
+    db.execute("INSERT INTO messages (sender, recipient, message_text, encrypted_key) VALUES (?, ?, ?, ?)", (sender, recipient, final_message_text, encrypted_key))
     db.commit()
-
     return jsonify({'status': 'success'})
-
 
 # --- Main Application Runner ---
 def main():
-    global APP_MODE, pqc_crypto_instance
+    global APP_MODE, pqc_crypto_instance, NGINX_PID_FILE
 
     parser = argparse.ArgumentParser(description="Run the backend web application.")
     parser.add_argument('--mode', choices=['vulnerable', 'secure'], required=True, help="The mode to run the application in.")
     parser.add_argument('--port', type=int, required=True, help="The port to run the application on.")
+    parser.add_argument('--nginx-pid-file', help="Path to the Nginx PID file to monitor and terminate.")
 
     args = parser.parse_args()
     APP_MODE = args.mode
+    NGINX_PID_FILE = args.nginx_pid_file
 
     if APP_MODE == 'secure':
-        # Initialize the PQC crypto module only in secure mode
         pqc_crypto_instance = PQCrypto()
 
     print(f"=========================================")
     print(f"Starting backend server in '{APP_MODE}' mode on port {args.port}")
+    if NGINX_PID_FILE:
+        print(f"Monitoring Nginx PID file: {NGINX_PID_FILE}")
+        print(f"Server will terminate after {REQUEST_LIMIT} requests.")
     print(f"Database path: {DB_PATH}")
     print(f"=========================================")
 
