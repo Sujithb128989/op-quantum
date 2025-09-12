@@ -10,8 +10,8 @@ echo "=================================================="
 echo ">>> Starting Server A (Standard)"
 echo "=================================================="
 
-# Define paths relative to the script's location
-ROOT_DIR=$(pwd)
+# Define paths relative to the project root directory where this script lives
+ROOT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 NGINX_DIR="${ROOT_DIR}/server_a/nginx"
 NGINX_CONF="${ROOT_DIR}/server_a/nginx.conf"
 PID_FILE="${NGINX_DIR}/pids/nginx_a.pid"
@@ -22,8 +22,8 @@ mkdir -p "${NGINX_DIR}/pids"
 
 # Start Nginx in the background
 echo ">>> Starting Nginx for Server A..."
-# We must run nginx from its own directory so it can find its relative paths
-(cd ${NGINX_DIR} && ./sbin/nginx -c ${NGINX_CONF}) &
+# We must run nginx from the project root so it can find the relative server_a paths
+${NGINX_DIR}/sbin/nginx -c ${NGINX_CONF} -p ${ROOT_DIR}
 
 # Wait a moment for Nginx to start and create the PID file
 sleep 2
@@ -36,6 +36,5 @@ python3 ${APP_PY} \
     --nginx-pid-file ${PID_FILE}
 
 # When the python app is killed (Ctrl+C), kill the background nginx process
-# The 'pkill' command is a more robust way to find the process if the PID file is stale
 echo ">>> Backend stopped. Shutting down Nginx..."
-pkill -F ${PID_FILE}
+kill $(cat ${PID_FILE})

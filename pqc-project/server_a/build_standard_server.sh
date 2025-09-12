@@ -19,10 +19,12 @@ ZLIB_VERSION="1.3.1"
 ZLIB_URL="https://www.zlib.net/zlib-${ZLIB_VERSION}.tar.gz"
 
 # --- Directories ---
-SRC_DIR="$(pwd)/src"
-BUILD_DIR="$(pwd)/build"
-INSTALL_DIR="$(pwd)/install"
-NGINX_INSTALL_DIR="$(pwd)/nginx"
+# Get the directory where this script is located
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+SRC_DIR="${SCRIPT_DIR}/src"
+BUILD_DIR="${SCRIPT_DIR}/build"
+INSTALL_DIR="${SCRIPT_DIR}/install"
+NGINX_INSTALL_DIR="${SCRIPT_DIR}/nginx"
 
 # Clean up previous builds
 rm -rf ${BUILD_DIR} ${INSTALL_DIR} ${NGINX_INSTALL_DIR}
@@ -66,7 +68,6 @@ echo ">>> pcre installed successfully."
 
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building and installing OpenSSL..."
-cd ${BUILD_DIR}
 # OpenSSL needs to be built from its source directory
 cd ${SRC_DIR}/openssl
 ./Configure linux-x86_64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} no-shared
@@ -80,16 +81,14 @@ echo ">>> Step 5: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-# We point configure to our custom installation directory for all dependencies.
-# For OpenSSL, PCRE, and Zlib, Nginx needs to be pointed to the *source* directories
-# of the dependencies, not their install directories.
+# For OpenSSL, PCRE, and Zlib, Nginx needs to be pointed to their *source* directories
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
     --with-ld-opt="-L${INSTALL_DIR}/lib" \
     --with-http_ssl_module \
-    --with-pcre=../pcre-${PCRE_VERSION} \
-    --with-zlib=../zlib-${ZLIB_VERSION} \
+    --with-pcre=${BUILD_DIR}/pcre-${PCRE_VERSION} \
+    --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION} \
     --with-openssl=${SRC_DIR}/openssl
 
 make -j$(nproc)
