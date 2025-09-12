@@ -73,6 +73,7 @@ cd ${SRC_DIR}/openssl
 ./Configure linux-x86_64 --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} no-shared
 make -j$(nproc)
 make install_sw
+make install_apps
 echo ">>> OpenSSL installed successfully."
 
 
