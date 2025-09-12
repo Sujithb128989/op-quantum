@@ -6,8 +6,6 @@
 # - Server A gets a standard RSA 2048-bit certificate.
 # - Server B gets a certificate signed with the PQC algorithm Dilithium3.
 #
-# This script should be run from the root of the 'op-quantum/' directory.
-#
 
 set -e
 
@@ -15,10 +13,10 @@ echo "=================================================="
 echo "Generating TLS Certificates"
 echo "=================================================="
 
-# Define paths relative to the project root
-PROJECT_DIR="pqc-project"
-SERVER_A_DIR="${PROJECT_DIR}/server_a"
-SERVER_B_DIR="${PROJECT_DIR}/server_b"
+# Get the directory where this script is located
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+SERVER_A_DIR="${SCRIPT_DIR}/server_a"
+SERVER_B_DIR="${SCRIPT_DIR}/server_b"
 
 # --- Server A: Standard RSA Certificate ---
 echo ">>> Generating standard RSA certificate for Server A..."
