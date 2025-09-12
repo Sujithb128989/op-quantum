@@ -92,7 +92,7 @@ echo ">>> liboqs installed successfully."
 echo ">>> Step 6: Building oqs-provider..."
 cd ${BUILD_DIR}
 mkdir -p oqs-provider && cd oqs-provider
-cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
+cmake -G "Ninja" -DCMAKE_PREFIX_PATH=${INSTALL_DIR} -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
 ninja
 ninja install
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
