@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# build_pqc_server.sh (Linux Version)
+# build_pqc_server.sh (Linux Version - Corrected Order)
 #
 # This script builds and installs all dependencies into a local directory,
 # then builds Nginx against those pre-compiled libraries.
@@ -67,31 +67,29 @@ make -j$(nproc)
 make install
 echo ">>> pcre installed successfully."
 
-# --- 4. Build and Install OpenSSL (PQC-Patched) ---
-# This is a multi-step process to create an OpenSSL that is PQC-aware.
-echo ">>> Step 4: Building PQC-enabled OpenSSL..."
-
-# 4a. Build liboqs (the PQC library)
-echo ">>> Step 4a: Building liboqs..."
+# --- 4. Build and Install OpenSSL ---
+echo ">>> Step 4: Building base OpenSSL..."
 cd ${BUILD_DIR}
-mkdir -p liboqs && cd liboqs
-cmake -G "Ninja" -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
-ninja
-ninja install
-echo ">>> liboqs installed successfully."
-
-# 4b. Build and patch OpenSSL
-echo ">>> Step 4b: Building and patching OpenSSL..."
-cd ${BUILD_DIR}
-mkdir -p openssl && cd openssl
+# OpenSSL needs to be built from its source directory
+cd ${SRC_DIR}/openssl
 # Note: oqs-provider requires a shared-library build of OpenSSL
-${SRC_DIR}/openssl/Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
 make -j$(nproc)
 make install_sw
 echo ">>> Base OpenSSL installed successfully."
 
-# 4c. Build oqs-provider to link liboqs and OpenSSL
-echo ">>> Step 4c: Building oqs-provider..."
+# --- 5. Build and Install liboqs ---
+echo ">>> Step 5: Building liboqs..."
+cd ${BUILD_DIR}
+mkdir -p liboqs && cd liboqs
+# Point to the OpenSSL we just built
+cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
+ninja
+ninja install
+echo ">>> liboqs installed successfully."
+
+# --- 6. Build and Install OQS Provider ---
+echo ">>> Step 6: Building oqs-provider..."
 cd ${BUILD_DIR}
 mkdir -p oqs-provider && cd oqs-provider
 cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
@@ -99,9 +97,8 @@ ninja
 ninja install
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
-
-# --- 5. Build and Install Nginx ---
-echo ">>> Step 5: Building and installing Nginx..."
+# --- 7. Build and Install Nginx ---
+echo ">>> Step 7: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
