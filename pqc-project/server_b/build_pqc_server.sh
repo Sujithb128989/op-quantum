@@ -93,6 +93,8 @@ mkdir -p oqs-provider && cd oqs-provider
 liboqs_DIR=${INSTALL_DIR}/lib/cmake/liboqs cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
 ninja
 ninja install
+echo ">>> Manually copying oqsprovider.so to fix installation issue..."
+cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
 # --- 7. Build and Install Nginx ---
