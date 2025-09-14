@@ -32,7 +32,7 @@ echo ">>> Generating PQC-signed certificate for Server B..."
 
 # Define paths to our custom PQC-enabled OpenSSL and the provider module
 PQC_OPENSSL="${SERVER_B_DIR}/install/bin/openssl"
-PROVIDER_MODULE_PATH="${SERVER_B_DIR}/install/lib/ossl-modules"
+PROVIDER_MODULE_PATH="${SERVER_B_DIR}/install/lib64/ossl-modules"
 PROVIDER_MODULE_NAME="oqsprovider"
 
 if [ ! -f "${PQC_OPENSSL}" ]; then
