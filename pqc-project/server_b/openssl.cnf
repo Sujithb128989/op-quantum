@@ -24,7 +24,7 @@ default = default_sect
 # The path is relative to the directory defined by the '--openssldir'
 # option during the OpenSSL build, which is our local `install` dir.
 [oqs_provider_sect]
-module = lib/ossl-modules/oqs.so
+module = lib/ossl-modules/oqsprovider.so
 activate = 1
 
 [default_sect]
