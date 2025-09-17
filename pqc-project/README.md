@@ -10,7 +10,7 @@ The demonstration contrasts a **standard server (Server A)** with a **PQC-harden
 
 ## 2. How to Run the Demonstration
 
-**Prerequisite:** You must be using a **Debian-based Linux** environment (e.g., Kali, Ubuntu) running in WSL.
+**Prerequisite:** You must be using a **Debian-based Linux** environment (e.g., Kali, Ubuntu) running in WSL. All commands should be run from the **root of the `op-quantum` repository**.
 
 ---
 
@@ -24,7 +24,7 @@ This phase will install all dependencies and build both servers.
     cd op-quantum
     ```
 
-2.  **Run the Master Setup Script:** This single script will perform all necessary setup steps, including installing dependencies, making scripts executable, building both servers, setting up the Python environment, generating certificates, and initializing the database. It will take a very long time.
+2.  **Run the Master Setup Script:** This single script will perform all necessary setup steps. It should be run from the `op-quantum` root directory.
     ```bash
     bash pqc-project/run_full_setup.sh
     ```
@@ -33,27 +33,27 @@ This phase will install all dependencies and build both servers.
 
 ### Phase 2: Running the Demonstration
 
-For the demonstration, you will need **three separate terminal windows** open at the `op-quantum/pqc-project` root directory.
+For the demonstration, you will need **four separate terminal windows**. All commands should be run from the **root of the `op-quantum` repository**.
 
 **Terminal 1: Start the VULNERABLE Server A**
-1.  Activate the Python Environment: `source ../venv/bin/activate`
+1.  Activate the Python Environment: `source venv/bin/activate`
 2.  Run the start script:
     ```bash
-    ./start_server_a.sh
+    bash pqc-project/start_server_a.sh
     ```
     *This terminal will now be occupied by the Python backend for Server A.*
 
 **Terminal 2: Start the SECURE Server B**
-1.  Activate the Python Environment: `source ../venv/bin/activate`
+1.  Activate the Python Environment: `source venv/bin/activate`
 2.  Run the start script:
     ```bash
-    ./start_server_b.sh
+    bash pqc-project/start_server_b.sh
     ```
     *This terminal will now be occupied by the Python backend for Server B.*
 
 **Terminal 3 (or External Machine): Run the Test Scripts**
 1.  **Find your Kali Linux IP Address:** You will need this if you are testing from a different machine. In a terminal on your Kali machine, run: `hostname -I`
-2.  **Activate the Python Environment** (if running locally): `source ../venv/bin/activate`
+2.  **Activate the Python Environment** (if running locally): `source venv/bin/activate`
 3.  **Follow the test narrative below**, replacing `<YOUR_KALI_IP>` with the address from the previous step.
 
 ---
@@ -66,7 +66,7 @@ For the demonstration, you will need **three separate terminal windows** open at
 *   **Action:** Run the validation test script against Server A's full URL.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
     ```
 *   **Expected Outcome:** The script will retrieve more data than intended.
 
@@ -76,7 +76,7 @@ For the demonstration, you will need **three separate terminal windows** open at
 *   **Action:** Run the load testing script against Server A's URL.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
     ```
 *   **Expected Outcome:** After approximately 5,000 requests are processed by the backend, the Python application will **terminate the Nginx process**. You will see the `start_server_a.sh` script exit in Terminal 1.
 
@@ -86,7 +86,7 @@ For the demonstration, you will need **three separate terminal windows** open at
 *   **Action:** Run the same validation test script against Server B's URL.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
     ```
 *   **Expected Outcome:** The script will fail to retrieve any data.
 
@@ -103,6 +103,6 @@ For the demonstration, you will need **three separate terminal windows** open at
 *   **Action:** Run the load testing script against Server B.
     ```bash
     # Replace <YOUR_KALI_IP> with your actual IP address
-    python3 attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
     ```
 *   **Expected Outcome:** The same as Server A. After ~5,000 requests, the Python backend will terminate the Nginx process.
