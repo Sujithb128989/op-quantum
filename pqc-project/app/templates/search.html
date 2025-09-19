@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Search</title>
+    <link rel="stylesheet" href="/static/silksong.css">
+</head>
+<body>
+    <div id="app-container">
+        <header>
+            <h1>User Search</h1>
+            <a href="/messaging">Back to Messenger</a>
+        </header>
+        <main>
+            <form method="post" action="/search">
+                <input type="text" name="search_term" placeholder="Enter search term...">
+                <input type="submit" value="Search">
+            </form>
+
+            <hr style="margin: 20px 0; border-color: #333;">
+
+            <h2>Results:</h2>
+            <ul>
+                {% for item in results %}
+                    <li>{{ item.username }}</li>
+                {% endfor %}
+            </ul>
+        </main>
+    </div>
+</body>
+</html>

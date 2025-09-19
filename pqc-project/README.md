@@ -64,13 +64,32 @@ To enable cross-server communication, you can specify the URL of the other serve
 
 ### Phase 3: The Demonstration Narrative
 
-#### 1. PQC-Encrypted Messaging
+#### 1. Input Validation Test (SQL Injection)
+
+*   **Goal:** Demonstrate an SQL Injection vulnerability on Server A and how Server B prevents it.
+*   **Action on Server A (Vulnerable):**
+    ```bash
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
+    ```
+*   **Expected Outcome on Server A:** The script will successfully dump table names and user data from the database.
+*   **Action on Server B (Secure):**
+    ```bash
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
+    ```
+*   **Expected Outcome on Server B:** The script will also succeed here. This is intentional, to show that the *only* difference between the servers is the PQC encryption for messaging and data-in-transit, not other security features.
+
+#### 2. PQC-Encrypted Messaging
 
 *   **Goal:** Demonstrate messages are protected at-rest using PQC and can be sent between servers.
-*   **Action:** In a web browser, go to the application UI for either server (e.g., `https://<YOUR_KALI_IP>:8443/messaging` or `https://<YOUR_KALI_IP>:9443/messaging`).
-*   **Action:** Send messages to the user "gitgud". If cross-server communication is enabled, the messages will appear on both servers.
+*   **Action:** In a web browser, go to the application UI for either server and send messages to "gitgud".
 *   **Verification:** Examine the `database.db` file in the `pqc-project` directory.
 *   **Expected Outcome:** The message content on Server B will be unreadable binary data.
+
+#### 3. Data-in-Transit Protection
+
+*   **Goal:** Demonstrate that Server B uses PQC to protect data in transit.
+*   **Action:** In a web browser, inspect the TLS certificate for Server B.
+*   **For detailed instructions, see the file `pqc-project/DATA_IN_TRANSIT_EXPLAINER.md`**.
 
 #### 2. High-Traffic Test on Both Servers ("Hard Crash")
 
