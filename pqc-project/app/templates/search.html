@@ -1,36 +1,23 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Search</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <div class="main-container">
-        <header>
-            <h1>User Database Search</h1>
-            <p><a href="/messaging">Back to Messenger</a></p>
-        </header>
+{% extends "layout.html" %}
 
-        <div class="content-card">
-            <h2>Search Form</h2>
-            <form method="post" action="/search">
-                <input type="text" name="search_term" placeholder="Enter search term or exploit string...">
-                <input type="submit" value="Search">
-            </form>
-        </div>
+{% block header_title %}User Database Search{% endblock %}
+{% block header_subtitle %}Demonstrating an Application-Layer Vulnerability{% endblock %}
 
-        {% if results %}
-        <div class="content-card" style="margin-top: 20px;">
-            <h2>Results</h2>
-            <ul>
-                {% for item in results %}
-                    <li>{{ item.username }}</li>
-                {% endfor %}
-            </ul>
-        </div>
-        {% endif %}
+{% block content %}
+    <h2>Search Form</h2>
+    <form method="post" action="{{ url_for('search') }}">
+        <input type="text" name="search_term" placeholder="Search for users...">
+        <input type="submit" value="Search">
+    </form>
+
+    {% if results %}
+    <div style="margin-top: 20px;">
+        <h3>Results:</h3>
+        <ul>
+            {% for item in results %}
+                <li>{{ item.username }}</li>
+            {% endfor %}
+        </ul>
     </div>
-</body>
-</html>
+    {% endif %}
+{% endblock %}

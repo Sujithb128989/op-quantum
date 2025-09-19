@@ -61,21 +61,16 @@ def close_connection(exception):
 # --- Routes ---
 @app.route('/')
 def index():
-    return render_template('index.html')
-
-@app.route('/pqc_explainer')
-def pqc_explainer():
-    with open(os.path.join(os.path.dirname(__file__), '..', 'PQC_EXPLAINER.md'), 'r') as f:
-        content = f.read()
-    html_content = markdown.markdown(content)
-    return render_template('pqc_explainer.html', content=html_content)
-
+    if APP_MODE == 'secure':
+        return render_template('index_b.html', app_mode=APP_MODE)
+    else:
+        return render_template('index_a.html', app_mode=APP_MODE)
 
 @app.route('/messaging')
 def messaging():
     if 'username' not in session:
         session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    return render_template('messaging.html')
+    return render_template('messaging.html', app_mode=APP_MODE)
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -90,7 +85,7 @@ def search():
         query = f"SELECT username, 'password' as password_hash FROM users WHERE username LIKE '%{search_term}%'"
         results = db.execute(query).fetchall()
 
-    return render_template('search.html', results=results)
+    return render_template('search.html', results=results, app_mode=APP_MODE)
 
 # --- API Endpoints for Messaging GUI ---
 @app.route('/api/get_current_user')
