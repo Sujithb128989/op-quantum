@@ -1,32 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PQC Secure Messenger</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-    <div class="main-container">
-        <header>
-            <h1>Secure Messenger</h1>
-            <p>Communicating with contact: <strong>gitgud</strong> | <a href="/">Home</a> | <a href="/search">User Search</a></p>
-        </header>
+{% extends "layout.html" %}
 
-        <div class="content-card">
-            <div id="chat-container">
-                <div id="message-display">
-                    <!-- Messages will be populated by JavaScript -->
-                </div>
-                <form id="message-form">
-                    <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
-                    <input type="hidden" id="recipient-input" name="recipient" value="gitgud">
-                    <button type="submit">Send</button>
-                </form>
-            </div>
-        </div>
+{% block header_title %}Secure Messenger{% endblock %}
+{% block header_subtitle %}Communicating with contact: <strong>gitgud</strong>{% endblock %}
+
+{% block content %}
+<div id="chat-container">
+    <div id="message-display">
+        <!-- Messages will be populated by JavaScript -->
     </div>
+    <form id="message-form">
+        <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+        <input type="hidden" id="recipient-input" name="recipient" value="gitgud">
+        <button type="submit">Send</button>
+    </form>
+</div>
+{% endblock %}
 
-    <script src="/static/messaging.js"></script>
-</body>
-</html>
+{% block scripts %}
+    <script src="{{ url_for('static', filename='messaging.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block header_title %}The Quantum-Resistant Web{% endblock %}
+{% block header_subtitle %}An Introduction to Post-Quantum Cryptography{% endblock %}
+
+{% block content %}
+    <h2>The Dawn of a New Threat</h2>
+    <p>
+        Welcome to the PQC-Enabled Server. The digital world is on the verge of a paradigm shift. The rise of **quantum computers**, machines powerful enough to break the very foundations of our current encryption, poses an unprecedented threat to global data security.
+    </p>
+    <p>
+        This is not a distant problem. The "Harvest Now, Decrypt Later" strategy, where adversaries record our encrypted data today to decrypt it with tomorrow's quantum computers, is a real and present danger.
+    </p>
+
+    <h2>The Solution: A New Generation of Cryptography</h2>
+    <p>
+        This server is hardened with **Post-Quantum Cryptography (PQC)**, a new class of algorithms designed to be secure against attacks from both classical and quantum computers. We use a hybrid approach, combining the best of both worlds for a robust defense.
+    </p>
+    <ul>
+        <li><strong>Data-in-Transit (TLS):</strong> The connection to this server is protected with a hybrid key exchange using **Kyber768**, a PQC algorithm chosen by NIST, combined with a classical algorithm. The server's identity is verified with a **Dilithium3** PQC signature.</li>
+        <li><strong>Data-at-Rest (Database):</strong> Messages stored by this server are encrypted using the same PQC KEM/DEM scheme, ensuring that even if the database is stolen, the contents remain secure.</li>
+    </ul>
+
+    <h3>A Glimpse into the Future</h3>
+    <p>
+        By using this server, you are interacting with the future of secure communication. The cryptography protecting your data here is built to withstand the most powerful computers imaginable.
+    </p>
+{% endblock %}
