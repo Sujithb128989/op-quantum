@@ -10,7 +10,7 @@ import string
 from flask import Flask, request, session, redirect, url_for, render_template, g, jsonify
 
 # --- Local Imports ---
-from pqc_crypto import PQCrypto
+# Defer PQC import until we know we need it
 
 # --- Application Setup ---
 app = Flask(__name__)
@@ -180,6 +180,7 @@ def main():
     OTHER_SERVER_URL = args.other_server_url
 
     if APP_MODE == 'secure':
+        from pqc_crypto import PQCrypto
         pqc_crypto_instance = PQCrypto()
 
     print(f"=========================================")

@@ -31,9 +31,10 @@ trap cleanup EXIT
 
 # Start Nginx in the background
 echo ">>> Starting Nginx for Server A..."
-# The -p flag sets the prefix path.
-# The -c flag explicitly tells Nginx which configuration file to use.
-${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/ -c ${NGINX_CONF_PATH}
+# Copy the correct config file to the location Nginx expects
+cp ${NGINX_CONF_PATH} ${NGINX_INSTALL_DIR}/conf/nginx.conf
+# The -p flag sets the prefix path, and Nginx will now find its config by default
+${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
 
 # Wait a moment for Nginx to start
 sleep 2
