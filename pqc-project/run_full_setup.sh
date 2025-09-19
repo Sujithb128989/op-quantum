@@ -47,6 +47,9 @@ echo
 echo ">>> STEP 5 of 6: Setting up Python virtual environment and packages..."
 python3 -m venv venv
 source venv/bin/activate
+echo ">>> Installing local oqs-python package..."
+pip install ${PROJECT_DIR}/server_b/src/liboqs-python
+echo ">>> Installing remaining packages..."
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt
 deactivate

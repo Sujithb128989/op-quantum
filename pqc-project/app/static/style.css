@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&display=swap');
+
+body, html {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #e0e0e0;
+}
+
+body {
+    background-image: url('https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/6cdafaab-e95a-49c7-a045-4f21469bb327/Blue_Cave.jpg');
+    background-size: cover;
+    background-attachment: fixed;
+    background-position: center;
+}
+
+.main-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 20px;
+    background-color: rgba(10, 15, 31, 0.85);
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+header {
+    text-align: center;
+    padding-bottom: 20px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #5a4b6e;
+}
+
+header h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 3em;
+    color: #ffffff;
+    text-shadow: 0 0 10px #a978ff, 0 0 20px #a978ff;
+    margin: 0;
+}
+
+header p {
+    font-size: 1.1em;
+    color: #c0c0c0;
+}
+
+a {
+    color: #9e8aff;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #ffffff;
+}
+
+.content-card {
+    background-color: rgba(26, 35, 59, 0.9);
+    padding: 30px;
+    border-radius: 5px;
+    border: 1px solid #2a3b5f;
+}
+
+.content-card h2 {
+    font-family: 'Cinzel', serif;
+    color: #d8cfff;
+    border-bottom: 1px solid #444;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+/* Form Styles */
+input[type="text"], input[type="password"] {
+    width: calc(100% - 22px);
+    padding: 10px;
+    background-color: #101628;
+    border: 1px solid #333;
+    color: #e0e0e0;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+button, input[type="submit"] {
+    background-color: #5a4b6e;
+    color: #ffffff;
+    border: none;
+    padding: 12px 25px;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s, box-shadow 0.3s;
+    text-transform: uppercase;
+}
+
+button:hover, input[type="submit"]:hover {
+    background-color: #7e6ca3;
+    box-shadow: 0 0 15px rgba(126, 108, 163, 0.7);
+}
+
+/* Messaging Specific */
+#chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 60vh;
+}
+
+#message-display {
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: rgba(0,0,0,0.3);
+    border: 1px solid #2a3b5f;
+    border-radius: 4px;
+    margin-bottom: 20px;
+}
+
+#message-form {
+    display: flex;
+}
+
+#message-input {
+    flex-grow: 1;
+    margin-right: 10px;
+    margin-bottom: 0;
+}
+
+.message {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 5px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.sent {
+    background-color: #4a90e2;
+    color: white;
+    align-self: flex-end;
+    margin-left: auto;
+}
+
+.message.received {
+    background-color: #2a3b5f;
+    align-self: flex-start;
+}
