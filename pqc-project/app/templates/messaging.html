@@ -4,23 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PQC Secure Messenger</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/silksong.css">
 </head>
 <body>
     <div id="app-container">
         <header>
             <h1>PQC Secure Messenger</h1>
-            <p>Logged in as: <strong id="current-user-display"></strong> | <a href="/logout">Logout</a></p>
+            <p>talking to: <strong id="current-user-display">gitgud</strong> | <a href="/">Home</a></p>
         </header>
 
         <div id="main-content">
-            <div id="user-list-container">
-                <h2>Users</h2>
-                <ul id="user-list">
-                    <!-- User list will be populated by JavaScript -->
-                </ul>
-            </div>
-
             <div id="chat-container">
                 <div id="message-display">
                     <!-- Messages will be populated by JavaScript -->
@@ -28,16 +21,10 @@
                 <div id="message-form-container">
                     <form id="message-form">
                         <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
-                        <input type="hidden" id="recipient-input" name="recipient">
+                        <input type="hidden" id="recipient-input" name="recipient" value="gitgud">
                         <button type="submit">Send</button>
                     </form>
                 </div>
-            </div>
-
-            <div id="visualization-container">
-                <h2>Encryption Status</h2>
-                <canvas id="encryption-canvas" width="200" height="200"></canvas>
-                <p id="viz-status">Idle</p>
             </div>
         </div>
     </div>

@@ -2,7 +2,7 @@
 
 ## 1. Project Objective
 
-This project provides a hands-on demonstration of Post-Quantum Cryptography (PQC). The demonstration contrasts a **standard server (Server A)** with a **PQC-hardened server (Server B)** and showcases how they respond to various test scenarios.
+This project provides a hands-on demonstration of Post-Quantum Cryptography (PQC). The demonstration contrasts a **standard server (Server A)** with a **PQC-hardened server (Server B)** and showcases how they respond to various test scenarios. The user interface has been redesigned with a theme inspired by the game *Hollow Knight: Silksong*.
 
 ## 2. How to Run the Demonstration
 
@@ -45,60 +45,42 @@ bash pqc-project/start_server_b.sh
 ```
 *This terminal will now be occupied by the backend for Server B. Leave it running.*
 
-**Terminal 3 (or External Machine): Run the Test Scripts**
-1.  **Find your Kali Linux IP Address** (if testing from another machine):
-    ```bash
-    hostname -I
-    ```
-2.  **Activate the Python Environment:**
-    ```bash
-    source venv/bin/activate
-    ```
-3.  **Follow the test narrative below**, replacing `<YOUR_KALI_IP>` with the address from the previous step.
+To enable cross-server communication, you can specify the URL of the other server when starting the applications. For example:
 
----
+**Terminal 1 (Server A with cross-server communication):**
+```bash
+# In start_server_a.sh, you would modify the python command to include --other-server-url
+# Example modification in start_server_a.sh:
+# python3 pqc-project/app/app.py --mode vulnerable --port 8000 --other-server-url http://localhost:9000
+```
+
+**Terminal 2 (Server B with cross-server communication):**
+```bash
+# In start_server_b.sh, you would modify the python command to include --other-server-url
+# Example modification in start_server_b.sh:
+# python3 pqc-project/app/app.py --mode secure --port 9000 --other-server-url http://localhost:8000
+```
+
 
 ### Phase 3: The Demonstration Narrative
 
-#### 1. Input Validation Test on Server A
+#### 1. PQC-Encrypted Messaging
 
-*   **Goal:** Demonstrate improper server-side input validation.
-*   **Action:**
-    ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
-    ```
-*   **Expected Outcome:** The script will retrieve user data from the database.
+*   **Goal:** Demonstrate messages are protected at-rest using PQC and can be sent between servers.
+*   **Action:** In a web browser, go to the application UI for either server (e.g., `https://<YOUR_KALI_IP>:8443/messaging` or `https://<YOUR_KALI_IP>:9443/messaging`).
+*   **Action:** Send messages to the user "gitgud". If cross-server communication is enabled, the messages will appear on both servers.
+*   **Verification:** Examine the `database.db` file in the `pqc-project` directory.
+*   **Expected Outcome:** The message content on Server B will be unreadable binary data.
 
-#### 2. High-Traffic Test on Server A ("Hard Crash")
+#### 2. High-Traffic Test on Both Servers ("Hard Crash")
 
-*   **Goal:** Demonstrate the server crashing after being overwhelmed.
-*   **Action:**
+*   **Goal:** Demonstrate the servers crashing after being overwhelmed.
+*   **Action (Server A):**
     ```bash
     python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
     ```
-*   **Expected Outcome:** After ~5,000 requests, the Nginx process will be terminated. The script in Terminal 1 will exit.
-
-#### 3. Input Validation Test on Server B
-
-*   **Goal:** Show the secure server correctly validates input.
-*   **Action:**
-    ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
-    ```
-*   **Expected Outcome:** The script will fail to retrieve any data.
-
-#### 4. PQC-Encrypted Messaging on Server B
-
-*   **Goal:** Demonstrate messages are protected at-rest using PQC.
-*   **Action:** In a web browser, go to the application UI (which you can find by running `python3 pqc-project/app/app.py` in a new terminal after activating the venv) and send messages between users on Server B.
-*   **Verification:** Examine the `database.db` file in the `pqc-project` directory.
-*   **Expected Outcome:** The message content will be unreadable binary data.
-
-#### 5. High-Traffic Test on Server B ("Hard Crash")
-
-*   **Goal:** Demonstrate the secure server also crashing when overwhelmed.
-*   **Action:**
+*   **Action (Server B):**
     ```bash
     python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
     ```
-*   **Expected Outcome:** The Nginx process will be terminated. The script in Terminal 2 will exit.
+*   **Expected Outcome:** The Nginx process will be terminated. The script in the corresponding terminal will exit.
