@@ -61,10 +61,7 @@ def close_connection(exception):
 # --- Routes ---
 @app.route('/')
 def index():
-    if APP_MODE == 'secure':
-        return render_template('index_b.html', app_mode=APP_MODE)
-    else:
-        return render_template('index_a.html', app_mode=APP_MODE)
+    return render_template('index.html', app_mode=APP_MODE)
 
 @app.route('/messaging')
 def messaging():

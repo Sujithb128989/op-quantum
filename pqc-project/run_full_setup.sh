@@ -47,11 +47,6 @@ echo
 echo ">>> STEP 5 of 6: Setting up Python virtual environment and packages..."
 python3 -m venv venv
 source venv/bin/activate
-echo ">>> Installing local oqs-python package..."
-# We must set the library path so the Python wrapper can find the compiled C library.
-export LD_LIBRARY_PATH=${PROJECT_DIR}/server_b/install/lib:$LD_LIBRARY_PATH
-pip install ${PROJECT_DIR}/server_b/src/liboqs-python
-echo ">>> Installing remaining packages..."
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt
 deactivate

@@ -1,14 +1,27 @@
-/* --- Style for Server B (PQC-Enabled) --- */
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+
+:root {
+    --primary-text: #e0e0e0;
+    --dark-bg: #0a0f1f;
+    --card-bg: rgba(10, 15, 31, 0.88);
+    --border-color: #2a3b5f;
+    --header-glow: #a978ff;
+    --link-color: #c0b8ff;
+    --link-hover: #ffffff;
+    --button-bg: #5a4b6e;
+    --button-hover: #7e6ca3;
+}
 
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
     font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    color: #e0e0e0;
+    color: var(--primary-text);
+    background-color: var(--dark-bg);
 }
 
-.background-image {
+.background-container {
     background-image: url('https://images.squarespace-cdn.com/content/v1/606d159a953867291018f801/6cdafaab-e95a-49c7-a045-4f21469bb327/Blue_Cave.jpg');
     background-size: cover;
     background-attachment: fixed;
@@ -18,18 +31,18 @@ body, html {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: -1;
-    filter: brightness(0.7);
+    z-index: -2;
+    filter: brightness(0.6);
 }
 
 .main-container {
     max-width: 960px;
     margin: 40px auto;
     padding: 30px 40px;
-    background-color: rgba(10, 15, 31, 0.85);
-    border: 1px solid #333;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.7);
     animation: fadeIn 1s ease-in-out;
 }
 
@@ -42,20 +55,15 @@ header {
     text-align: center;
     padding-bottom: 20px;
     margin-bottom: 20px;
-    border-bottom: 1px solid #5a4b6e;
+    border-bottom: 1px solid var(--button-bg);
 }
 
 header h1 {
     font-family: 'Cinzel', serif;
     font-size: 3em;
-    color: #ffffff;
-    text-shadow: 0 0 10px #a978ff, 0 0 20px #a978ff, 0 0 5px #000;
+    color: var(--link-hover);
+    text-shadow: 0 0 10px var(--header-glow), 0 0 20px var(--header-glow), 0 0 5px #000;
     margin: 0;
-}
-
-header p {
-    font-size: 1.2em;
-    color: #d8cfff;
 }
 
 nav {
@@ -64,11 +72,11 @@ nav {
     margin-bottom: 30px;
     background-color: rgba(0,0,0,0.2);
     border-radius: 5px;
-    border: 1px solid #2a3b5f;
+    border: 1px solid var(--border-color);
 }
 
 nav a {
-    color: #c0b8ff;
+    color: var(--link-color);
     text-decoration: none;
     margin: 0 20px;
     font-size: 1.1em;
@@ -77,18 +85,21 @@ nav a {
 }
 
 nav a:hover {
-    color: #ffffff;
-    text-shadow: 0 0 8px #fff;
+    color: var(--link-hover);
+    text-shadow: 0 0 8px var(--link-hover);
 }
 
 .content-card {
-    padding: 0;
+    padding: 20px;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 5px;
+    border: 1px solid var(--border-color);
 }
 
 .content-card h2 {
     font-family: 'Cinzel', serif;
-    color: #a978ff;
-    border-bottom: 2px solid #5a4b6e;
+    color: var(--header-glow);
+    border-bottom: 2px solid var(--button-bg);
     padding-bottom: 10px;
     margin-top: 0;
     margin-bottom: 20px;
@@ -96,18 +107,14 @@ nav a:hover {
 
 .content-card p, .content-card li {
     line-height: 1.8;
-    color: #e0e0e0;
-}
-
-ul {
-    padding-left: 20px;
+    color: var(--primary-text);
 }
 
 footer {
     text-align: center;
     margin-top: 40px;
     padding-top: 20px;
-    border-top: 1px solid #2a3b5f;
+    border-top: 1px solid var(--border-color);
     color: #95a5a6;
 }
 
@@ -117,14 +124,14 @@ input[type="text"] {
     padding: 10px;
     background-color: #101628;
     border: 1px solid #333;
-    color: #e0e0e0;
+    color: var(--primary-text);
     border-radius: 4px;
     margin-bottom: 10px;
 }
 
 button, input[type="submit"] {
-    background-color: #5a4b6e;
-    color: #ffffff;
+    background-color: var(--button-bg);
+    color: var(--link-hover);
     border: none;
     padding: 12px 25px;
     font-family: 'Cinzel', serif;
@@ -136,7 +143,7 @@ button, input[type="submit"] {
 }
 
 button:hover, input[type="submit"]:hover {
-    background-color: #7e6ca3;
+    background-color: var(--button-hover);
     box-shadow: 0 0 15px rgba(126, 108, 163, 0.7);
 }
 
@@ -152,7 +159,7 @@ button:hover, input[type="submit"]:hover {
     padding: 15px;
     overflow-y: auto;
     background-color: rgba(0,0,0,0.3);
-    border: 1px solid #2a3b5f;
+    border: 1px solid var(--border-color);
     border-radius: 4px;
     margin-bottom: 20px;
 }
@@ -176,16 +183,16 @@ button:hover, input[type="submit"]:hover {
 }
 
 .message.sent {
-    background-color: #5a4b6e;
-    color: white;
+    background-color: var(--button-bg);
+    color: var(--link-hover);
     align-self: flex-end;
     margin-left: auto;
     border-bottom-right-radius: 3px;
 }
 
 .message.received {
-    background-color: #2a3b5f;
-    color: #e0e0e0;
+    background-color: var(--border-color);
+    color: var(--primary-text);
     align-self: flex-start;
     border-bottom-left-radius: 3px;
 }

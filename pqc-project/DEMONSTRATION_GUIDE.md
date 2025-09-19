@@ -3,6 +3,8 @@
 This file contains the step-by-step commands and actions for a live demonstration of this project.
 
 ---
+**IMPORTANT NOTE ON AUDIO:** For the audio feature to work, you must provide your own `gitgud.mp3` sound file. Place this file inside the `pqc-project/app/static/audio/` directory before starting the servers.
+---
 
 ### **Part 1: Initial Setup**
 
