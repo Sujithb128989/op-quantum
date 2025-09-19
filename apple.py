@@ -1,1 +1,1 @@
-print("Gods of death love apple")
+print("aaple")
