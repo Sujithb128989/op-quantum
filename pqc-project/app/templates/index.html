@@ -4,34 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PQC Demonstration</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="background-container"></div>
     <div class="main-container">
         <header>
             <h1>Post-Quantum Cryptography</h1>
-            <p>A Demonstration of Next-Generation Encryption</p>
+            <p>A Demonstration of Next-Generation Digital Defense</p>
         </header>
 
-        <div class="content-card">
-            <h2>Welcome</h2>
+        <nav>
+            <a href="{{ url_for('index') }}">Home</a>
+            <a href="{{ url_for('messaging') }}">Messenger</a>
+            <a href="{{ url_for('search') }}">Database Search</a>
+        </nav>
+
+        <main class="content-card">
+            <h2>The Quantum Threat is Here</h2>
             <p>
-                Welcome to our demonstration of Post-Quantum Cryptography (PQC). In a world where quantum computers threaten to break our current encryption standards, PQC offers a new generation of cryptographic algorithms that are resistant to quantum attacks.
-            </p>
-            <p>
-                This project showcases PQC in action by running two parallel servers:
+                Welcome. This project demonstrates the need for Post-Quantum Cryptography (PQC) by running two parallel servers. While they share this user interface, their underlying security architecture is vastly different.
             </p>
             <ul>
-                <li><strong>Server A (Classic):</strong> Uses traditional cryptography, which is vulnerable to quantum attacks.</li>
-                <li><strong>Server B (PQC-Enabled):</strong> Uses PQC to protect data, both in transit and at rest.</li>
+                <li><strong>Server A (Classic Server):</strong> This server runs on standard TLS encryption (like RSA). It is strong by today's standards, but will be vulnerable to decryption by future quantum computers.</li>
+                <li><strong>Server B (PQC-Enabled Server):</strong> This server uses PQC algorithms (Kyber and Dilithium) for both data-in-transit (TLS) and data-at-rest (database encryption). It is secure against both classical and quantum attacks.</li>
             </ul>
             <p>
-                Explore the messenger to see the difference for yourself.
+                Both servers are intentionally built with the same application-level vulnerabilities to demonstrate that PQC is a defense against cryptographic threats, not a replacement for secure coding practices.
             </p>
-            <p style="text-align: center; margin-top: 30px;">
-                <a href="/messaging" style="font-size: 1.2em; font-family: 'Cinzel', serif;">Enter the Secure Messenger</a>
-            </p>
-        </div>
+        </main>
+
+        <footer>
+            <p>Demonstration running in <strong>{{ app_mode }}</strong> mode.</p>
+        </footer>
     </div>
 </body>
 </html>

@@ -31,12 +31,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!message) return;
 
         // Play the sound effect
-        try {
-            // Note for user: Place your 'gitgud.mp3' file in the '/static/audio/' directory.
-            const audio = new Audio('/static/audio/gitgud.mp3');
-            audio.play();
-        } catch (e) {
-            console.error("Audio playback failed:", e);
+        const audio = new Audio('/static/audio/gitgud.mp3');
+        const promise = audio.play();
+        if (promise !== undefined) {
+            promise.catch(error => {
+                // Autoplay was prevented or the file doesn't exist.
+                // This is a common browser security feature.
+                console.warn("Audio playback failed. This can happen if the file is missing (add gitgud.mp3 to static/audio) or if the user hasn't interacted with the page yet.", error);
+            });
         }
 
         await fetch('/api/send_message', {
