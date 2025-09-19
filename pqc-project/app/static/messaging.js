@@ -29,6 +29,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function sendMessage(message) {
         if (!message) return;
+
+        // Play the sound effect
+        try {
+            // Note for user: Place your 'gitgud.mp3' file in the '/static/audio/' directory.
+            const audio = new Audio('/static/audio/gitgud.mp3');
+            audio.play();
+        } catch (e) {
+            console.error("Audio playback failed:", e);
+        }
+
         await fetch('/api/send_message', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

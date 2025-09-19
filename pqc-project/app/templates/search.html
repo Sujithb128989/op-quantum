@@ -4,29 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Search</title>
-    <link rel="stylesheet" href="/static/silksong.css">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="app-container">
+    <div class="main-container">
         <header>
-            <h1>User Search</h1>
-            <a href="/messaging">Back to Messenger</a>
+            <h1>User Database Search</h1>
+            <p><a href="/messaging">Back to Messenger</a></p>
         </header>
-        <main>
+
+        <div class="content-card">
+            <h2>Search Form</h2>
             <form method="post" action="/search">
-                <input type="text" name="search_term" placeholder="Enter search term...">
+                <input type="text" name="search_term" placeholder="Enter search term or exploit string...">
                 <input type="submit" value="Search">
             </form>
+        </div>
 
-            <hr style="margin: 20px 0; border-color: #333;">
-
-            <h2>Results:</h2>
+        {% if results %}
+        <div class="content-card" style="margin-top: 20px;">
+            <h2>Results</h2>
             <ul>
                 {% for item in results %}
                     <li>{{ item.username }}</li>
                 {% endfor %}
             </ul>
-        </main>
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

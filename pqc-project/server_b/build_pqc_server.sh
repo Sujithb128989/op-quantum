@@ -11,6 +11,8 @@ set -e # Exit immediately if any command fails
 # --- Configuration ---
 LIBOQS_GIT_URL="https://github.com/open-quantum-safe/liboqs.git"
 LIBOQS_GIT_TAG="0.10.0"
+LIBOQS_PYTHON_GIT_URL="https://github.com/open-quantum-safe/liboqs-python.git"
+LIBOQS_PYTHON_GIT_TAG="0.10.0"
 OQSPROVIDER_GIT_URL="https://github.com/open-quantum-safe/oqs-provider.git"
 OQSPROVIDER_GIT_TAG="0.6.0"
 OPENSSL_GIT_URL="https://github.com/openssl/openssl.git"
@@ -42,6 +44,7 @@ echo "=================================================="
 echo ">>> Step 1: Downloading all source code..."
 cd ${SRC_DIR}
 if [ ! -d "liboqs" ]; then git clone --depth 1 --branch ${LIBOQS_GIT_TAG} ${LIBOQS_GIT_URL}; fi
+if [ ! -d "liboqs-python" ]; then git clone --depth 1 --branch ${LIBOQS_PYTHON_GIT_TAG} ${LIBOQS_PYTHON_GIT_URL}; fi
 if [ ! -d "oqs-provider" ]; then git clone --depth 1 --branch ${OQSPROVIDER_GIT_TAG} ${OQSPROVIDER_GIT_URL}; fi
 if [ ! -d "openssl" ]; then git clone --depth 1 --branch ${OPENSSL_GIT_TAG} ${OPENSSL_GIT_URL}; fi
 if [ ! -f "nginx-${NGINX_VERSION}.tar.gz" ]; then wget ${NGINX_URL}; fi
