@@ -1,5 +1,5 @@
 Flask
-oqs
+oqs @ git+https://github.com/open-quantum-safe/oqs-python.git@0.10.0
 cryptography
 Markdown
 gunicorn
