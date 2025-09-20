@@ -52,7 +52,7 @@ echo ">>> Installing Python packages. This may take a while..."
 export OQS_LIB_DIR="${PROJECT_DIR}/server_b/install/lib64"
 export OQS_INCLUDE_DIR="${PROJECT_DIR}/server_b/install/include"
 # Install oqs from the local zip file, forcing it to build against our liboqs
-pip install /tmp/liboqs-python-0.10.0.zip
+pip install ${PROJECT_DIR}/vendor/liboqs-python-0.10.0.zip
 # Install the rest of the requirements
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt
