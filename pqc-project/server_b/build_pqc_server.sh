@@ -74,7 +74,7 @@ echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
 ./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared "-Wl,-rpath,${INSTALL_DIR}/lib64"
 make -j$(nproc)
-make install_sw
+make install
 echo ">>> Base OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
