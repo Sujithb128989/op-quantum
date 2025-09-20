@@ -1,5 +1,4 @@
 Flask
-oqs==0.10.2
 cryptography
 Markdown
 gunicorn
