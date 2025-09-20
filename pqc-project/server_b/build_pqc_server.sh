@@ -73,7 +73,7 @@ echo ">>> pcre installed successfully."
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
 # Add rpath to ensure the build is self-contained and not contaminated by system libs
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared -Wl,-rpath,${INSTALL_DIR}/lib64
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared -Wl,-rpath,${INSTALL_DIR}/lib64
 make -j$(nproc)
 # Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed
 make install
@@ -100,10 +100,22 @@ echo ">>> Manually copying oqsprovider.so to fix installation issue..."
 # This manual copy is necessary because the oqs-provider install sometimes fails
 # to place the module in the correct final location.
 cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
-echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
+echo ">>> oqs-provider installed successfully."
 
-# --- 7. Build and Install Nginx ---
-echo ">>> Step 7: Building and installing Nginx..."
+# --- 7. Configure OpenSSL for OQS Provider ---
+echo ">>> Step 7: Configuring OpenSSL for OQS Provider..."
+# Based on the official oqs-demos Dockerfile, we must manually configure openssl.cnf
+# to activate the provider.
+OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
+# Add the oqsprovider to the provider list
+sed -i "s/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g" ${OPENSSL_CNF_PATH}
+# Add the oqsprovider section and activate it
+sed -i "s/\[default_sect\]/\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}\/lib64\/ossl-modules\/oqsprovider.so\n/g" ${OPENSSL_CNF_PATH}
+echo ">>> OpenSSL configured for OQS Provider."
+
+
+# --- 8. Build and Install Nginx ---
+echo ">>> Step 8: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
