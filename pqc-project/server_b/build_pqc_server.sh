@@ -72,23 +72,16 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-# Add rpath to ensure the build is self-contained and not contaminated by system libs
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared -Wl,-rpath,${INSTALL_DIR}/lib64
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
 make -j$(nproc)
-# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed
-make install
+make install_sw
 echo ">>> Base OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-cmake -G "Ninja" \
-    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
-    -DOPENSSL_INCLUDE_DIR=${INSTALL_DIR}/include \
-    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-    -S ${SRC_DIR}/liboqs
+cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
@@ -97,13 +90,10 @@ echo ">>> liboqs installed successfully."
 echo ">>> Step 6: Building oqs-provider..."
 cd ${BUILD_DIR}
 mkdir -p oqs-provider && cd oqs-provider
-# Point to the correct liboqs cmake config directory
 liboqs_DIR=${INSTALL_DIR}/lib/cmake/liboqs cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
 ninja
 ninja install
 echo ">>> Manually copying oqsprovider.so to fix installation issue..."
-# This manual copy is necessary because the oqs-provider install sometimes fails
-# to place the module in the correct final location.
 cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
@@ -112,11 +102,10 @@ echo ">>> Step 7: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-# Use --with-ld-opt and rpath to ensure Nginx links against our custom OpenSSL
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
-    --with-ld-opt="-L${INSTALL_DIR}/lib64 -Wl,-rpath,${INSTALL_DIR}/lib64" \
+    --with-ld-opt="-L${INSTALL_DIR}/lib" \
     --with-http_ssl_module \
     --with-pcre=${BUILD_DIR}/pcre-${PCRE_VERSION} \
     --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION} \
