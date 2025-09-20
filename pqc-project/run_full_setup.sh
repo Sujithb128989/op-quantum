@@ -45,6 +45,11 @@ echo ">>> Server B build complete."
 # --- Step 5: Set Up Python Environment ---
 echo
 echo ">>> STEP 5 of 6: Setting up Python virtual environment and packages..."
+# Download the oqs-python source to a temporary location
+if [ ! -f "/tmp/liboqs-python-0.10.0.zip" ]; then
+    echo ">>> Downloading oqs-python source..."
+    wget https://github.com/open-quantum-safe/liboqs-python/archive/refs/tags/0.10.0.zip -O /tmp/liboqs-python-0.10.0.zip
+fi
 python3 -m venv venv
 source venv/bin/activate
 echo ">>> Installing Python packages. This may take a while..."
@@ -52,7 +57,7 @@ echo ">>> Installing Python packages. This may take a while..."
 export OQS_LIB_DIR="${PROJECT_DIR}/server_b/install/lib64"
 export OQS_INCLUDE_DIR="${PROJECT_DIR}/server_b/install/include"
 # Install oqs from the local zip file, forcing it to build against our liboqs
-pip install ${PROJECT_DIR}/vendor/liboqs-python-0.10.0.zip
+pip install /tmp/liboqs-python-0.10.0.zip
 # Install the rest of the requirements
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt
