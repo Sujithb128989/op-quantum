@@ -18,6 +18,9 @@ PID_FILE="${NGINX_INSTALL_DIR}/pids/nginx_b.pid"
 APP_PY="${PROJECT_DIR}/app/app.py"
 VENV_PYTHON="${PROJECT_DIR}/../venv/bin/python3"
 
+# Force all binaries to use our custom-built libraries
+export LD_LIBRARY_PATH="${PROJECT_DIR}/server_b/install/lib64"
+
 # Function to clean up background processes on exit
 cleanup() {
     echo ">>> Shutting down Server B..."
