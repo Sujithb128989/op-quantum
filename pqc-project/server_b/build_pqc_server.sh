@@ -81,7 +81,12 @@ echo ">>> Base OpenSSL installed successfully."
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
+cmake -G "Ninja" \
+    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
+    -DOPENSSL_INCLUDE_DIR=${INSTALL_DIR}/include \
+    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
