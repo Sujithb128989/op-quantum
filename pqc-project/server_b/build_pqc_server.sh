@@ -72,7 +72,7 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared "-Wl,-rpath,${INSTALL_DIR}/lib64"
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared -Wl,-rpath,${INSTALL_DIR}/lib64
 make -j$(nproc)
 make install
 echo ">>> Base OpenSSL installed successfully."
