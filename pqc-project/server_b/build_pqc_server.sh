@@ -107,10 +107,9 @@ echo ">>> Step 7: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-./configure \
+LDFLAGS="-L${INSTALL_DIR}/lib64 -Wl,-rpath,${INSTALL_DIR}/lib64" ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
-    --with-ld-opt="-L${INSTALL_DIR}/lib" \
     --with-http_ssl_module \
     --with-pcre=${BUILD_DIR}/pcre-${PCRE_VERSION} \
     --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION} \
