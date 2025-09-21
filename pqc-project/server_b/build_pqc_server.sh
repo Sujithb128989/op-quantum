@@ -81,8 +81,8 @@ echo ">>> Base OpenSSL installed successfully."
 # --- 5. Patch and Verify OpenSSL Build ---
 echo ">>> Step 5: Patching and Verifying OpenSSL build..."
 # Use patchelf to forcefully set the rpath. This is the most robust method.
-# The single quotes ensure '$ORIGIN' is passed literally.
-patchelf --force-rpath --set-rpath '$ORIGIN/../lib64' "${INSTALL_DIR}/bin/openssl"
+# The $'\044' syntax is ANSI-C Quoting, which guarantees a literal dollar sign.
+patchelf --force-rpath --set-rpath $'\044ORIGIN/../lib64' "${INSTALL_DIR}/bin/openssl"
 echo ">>> Verifying OpenSSL linkage..."
 # Verify that the RPATH/RUNPATH is correctly set.
 readelf -d ${INSTALL_DIR}/bin/openssl | grep -E 'RPATH|RUNPATH' || (echo "ERROR: RPATH/RUNPATH not set in openssl binary" && exit 1)
