@@ -120,6 +120,15 @@ make -j$(nproc)
 make install
 echo ">>> Nginx with PQC support installed successfully."
 
+# --- Step 8: Set RPATH on binaries ---
+echo ">>> Step 8: Applying patchelf to fix runtime library paths..."
+# For the openssl binary in install/bin, the path to install/lib64 is one level up
+patchelf --set-rpath "\$ORIGIN/../lib64" "${INSTALL_DIR}/bin/openssl"
+# For the nginx binary in nginx/sbin, the path is two levels up and then into install/lib64
+patchelf --set-rpath "\$ORIGIN/../../install/lib64" "${NGINX_INSTALL_DIR}/sbin/nginx"
+echo ">>> RPATHs set successfully."
+
+
 echo "=================================================="
 echo "PQC Server (Server B) Build Process COMPLETE"
 echo "=================================================="

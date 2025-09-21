@@ -29,10 +29,26 @@ cleanup() {
 }
 trap cleanup EXIT
 
+# --- Pre-flight Checks ---
+CERT_FILE="${PROJECT_DIR}/server_b.crt"
+KEY_FILE="${PROJECT_DIR}/server_b.key"
+if [ ! -f "${CERT_FILE}" ]; then
+    echo ">>> Certificate not found. Please run 'generate_certs.sh' first."
+    exit 1
+fi
+
+# --- Dynamic Nginx Configuration ---
+# Create a temporary config file with absolute paths to the certificates
+TEMP_NGINX_CONF=$(mktemp)
+# Use a different separator for sed to avoid issues with paths containing '/'
+sed "s|__CERT_PATH__|${CERT_FILE}|g; s|__KEY_PATH__|${KEY_FILE}|g" "${NGINX_CONF_PATH}" > "${TEMP_NGINX_CONF}"
+
+
 # Start Nginx in the background
 echo ">>> Starting Nginx for Server B..."
-# Copy the correct config file to the location Nginx expects
-cp ${NGINX_CONF_PATH} ${NGINX_INSTALL_DIR}/conf/nginx.conf
+# Copy the dynamically generated config file to the location Nginx expects
+cp "${TEMP_NGINX_CONF}" "${NGINX_INSTALL_DIR}/conf/nginx.conf"
+rm "${TEMP_NGINX_CONF}" # Clean up temp file
 # The -p flag sets the prefix path, and Nginx will now find its config by default
 ${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
 
