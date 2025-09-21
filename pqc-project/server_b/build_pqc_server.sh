@@ -72,19 +72,22 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
+# Use origin-based rpath and enable-new-dtags for robust library linking.
+# This is the key fix to prevent system library contamination.
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared -Wl,-rpath,'$ORIGIN/../lib64' -Wl,--enable-new-dtags
 make -j$(nproc)
-make install_sw
+# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed.
+make install
 echo ">>> Base OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
+# Use the simpler cmake command and point to lib64.
 cmake -G "Ninja" \
     -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
-    -DOPENSSL_INCLUDE_DIR=${INSTALL_DIR}/include \
-    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib \
+    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
     -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
     -S ${SRC_DIR}/liboqs
 ninja
@@ -100,16 +103,23 @@ ninja
 ninja install
 echo ">>> Manually copying oqsprovider.so to fix installation issue..."
 cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
-echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
+echo ">>> oqs-provider installed successfully."
 
-# --- 7. Build and Install Nginx ---
-echo ">>> Step 7: Building and installing Nginx..."
+# --- 7. Configure OpenSSL for OQS Provider ---
+echo ">>> Step 7: Configuring OpenSSL for OQS Provider..."
+# Manually configure openssl.cnf to activate the provider.
+OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
+sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
+sed -i "s#\[default_sect\]#\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so\n#g" ${OPENSSL_CNF_PATH}
+echo ">>> OpenSSL configured for OQS Provider."
+
+# --- 8. Build and Install Nginx ---
+echo ">>> Step 8: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-# Based on expert advice, we do NOT use --with-openssl, as this causes Nginx
-# to do its own build of OpenSSL, ignoring our custom one. Instead, we point
-# to the include and library paths of our custom build.
+# Do NOT use --with-openssl. Point to the installed libs directly.
+# Use rpath and enable-new-dtags to ensure correct runtime linking.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
