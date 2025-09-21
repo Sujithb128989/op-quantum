@@ -72,10 +72,11 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-# Add rpath to ensure the build is self-contained and not contaminated by system libs
+# Add rpath to ensure the build is self-contained and not contaminated by system libs.
+# Also, point --openssldir to a /ssl subdirectory to keep it clean.
 ./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared -Wl,-rpath,${INSTALL_DIR}/lib64
 make -j$(nproc)
-# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed
+# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed.
 make install
 echo ">>> Base OpenSSL installed successfully."
 
@@ -83,8 +84,13 @@ echo ">>> Base OpenSSL installed successfully."
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-# Use the simpler cmake command from the user's working script
-cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
+# Use the simpler cmake command from the user's working script.
+# Point to lib64 where the libraries are actually installed.
+cmake -G "Ninja" \
+    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
+    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
