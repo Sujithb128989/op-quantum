@@ -67,15 +67,13 @@ def index():
 def messaging():
     if 'username' not in session:
         session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    # Pass an empty list for search results on default page load
-    return render_template('messaging.html', user_search_results=[], app_mode=APP_MODE)
+    db = get_db()
+    # By default, show all users in the database.
+    all_users = db.execute("SELECT username, password FROM users ORDER BY username").fetchall()
+    return render_template('messaging.html', all_users=all_users, app_mode=APP_MODE)
 
 @app.route('/search', methods=['POST'])
 def search():
-    """
-    This search function is intentionally vulnerable to SQL injection.
-    It is for educational and demonstration purposes only.
-    """
     if 'username' not in session:
         session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
@@ -83,17 +81,17 @@ def search():
     db = get_db()
 
     # --- INTENTIONAL VULNERABILITY ---
-    # The following code constructs a SQL query using unsafe string concatenation.
-    # This is the source of the SQL injection vulnerability.
-    # In a real application, you should ALWAYS use parameterized queries.
-    # For example: db.execute("... WHERE username LIKE ?", ('%' + search_term + '%',))
+    # This query is intentionally vulnerable to SQL Injection for demonstration purposes.
     vulnerable_query = "SELECT username, password FROM users WHERE username LIKE '%" + search_term + "%'"
     # --- END INTENTIONAL VULNERABILITY ---
 
-    results = db.execute(vulnerable_query).fetchall()
+    search_results = db.execute(vulnerable_query).fetchall()
 
-    # Render the messaging page, passing the search results to be displayed in the user list.
-    return render_template('messaging.html', user_search_results=results, app_mode=APP_MODE)
+    # Also fetch all users so the list can be repopulated if the search is cleared
+    all_users = db.execute("SELECT username, password FROM users ORDER BY username").fetchall()
+
+    # Render the same template, but pass the search_results variable
+    return render_template('messaging.html', search_results=search_results, all_users=all_users, app_mode=APP_MODE)
 
 # --- API Endpoints for Messaging GUI ---
 @app.route('/api/get_current_user')
@@ -107,11 +105,14 @@ def get_messages():
     if 'username' not in session:
         return jsonify({'error': 'Not logged in'}), 401
 
+    recipient = request.args.get('recipient')
+    if not recipient:
+        return jsonify({'error': 'Recipient parameter is required'}), 400
+
     db = get_db()
     current_user = session['username']
-    recipient = "gitgud" # Hardcoded recipient
 
-    messages_query = "SELECT sender, recipient, message_text, encrypted_key, timestamp FROM messages WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) ORDER BY timestamp DESC"
+    messages_query = "SELECT sender, recipient, message_text, encrypted_key, timestamp FROM messages WHERE (sender = ? AND recipient = ?) OR (sender = ? AND recipient = ?) ORDER BY timestamp ASC"
     messages_rows = db.execute(messages_query, (current_user, recipient, recipient, current_user)).fetchall()
 
     messages = []
@@ -136,11 +137,11 @@ def send_message():
         return jsonify({'error': 'Not logged in'}), 401
 
     data = request.get_json()
-    recipient = "gitgud" # Hardcoded recipient
+    recipient = data.get('recipient')
     message_text = data.get('message_text')
 
-    if not message_text:
-        return jsonify({'error': 'Missing message text'}), 400
+    if not recipient or not message_text:
+        return jsonify({'error': 'Missing recipient or message text'}), 400
 
     db = get_db()
     sender = session['username']
