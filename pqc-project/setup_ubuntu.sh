@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# setup_kali.sh
+# setup_ubuntu.sh
 #
 # This script should be run on a Debian-based Linux distribution (like Kali or Ubuntu).
 # It installs all the necessary packages required to compile the project components.
