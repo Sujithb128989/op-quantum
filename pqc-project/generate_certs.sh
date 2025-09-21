@@ -49,7 +49,7 @@ fi
 
 # Generate a key using the Dilithium3 PQC signature algorithm.
 # We use -provider-path and -provider to explicitly load our custom module.
-${PQC_OPENSSL} req -x509 -newkey dilithium3 -nodes -days 365 \
+${PQC_OPENSSL} req -x509 -newkey dilithium3 -nodes -days 365 -rand /dev/urandom \
     -provider-path ${PROVIDER_MODULE_PATH} \
     -provider ${PROVIDER_MODULE_NAME} \
     -keyout ${SERVER_B_DIR}/server_b.key \
