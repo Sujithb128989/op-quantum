@@ -115,10 +115,13 @@ echo ">>> oqs-provider installed successfully."
 # --- 8. Configure OpenSSL for OQS Provider ---
 echo ">>> Step 8: Configuring OpenSSL for OQS Provider..."
 OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
-# Add the oqsprovider to the provider list
-sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
+# Add the openssl_init section and the provider table.
+# This ensures both the default provider (for DRBG) and oqsprovider are loaded.
+echo -e "\nopenssl_conf = openssl_init\n" >> ${OPENSSL_CNF_PATH}
+echo -e "[openssl_init]\nproviders = provider_sect\n" >> ${OPENSSL_CNF_PATH}
+echo -e "[provider_sect]\ndefault = default_sect\noqsprovider = oqsprovider_sect\n" >> ${OPENSSL_CNF_PATH}
 # Add the oqsprovider section and activate it
-sed -i "s#\[provider_sect\]#\[provider_sect\]\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
+sed -i "s#\[default_sect\]#\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
 echo ">>> OpenSSL configured for OQS Provider."
 
 
