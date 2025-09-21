@@ -79,12 +79,17 @@ make -j$(nproc)
 # Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed.
 make install
 echo ">>> Base OpenSSL installed successfully."
+echo ">>> Verifying OpenSSL build..."
+readelf -d ${INSTALL_DIR}/bin/openssl | grep -E 'RPATH|RUNPATH' || (echo "ERROR: RPATH/RUNPATH not set in openssl binary" && exit 1)
+ldd ${INSTALL_DIR}/bin/openssl | grep "libssl.so.3 => ${INSTALL_DIR}" || (echo "ERROR: openssl not linked to custom libssl" && exit 1)
+echo ">>> OpenSSL build verified successfully."
+
 
 # --- 5. Build and Install liboqs ---
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-# Use the simpler cmake command and point to lib64.
+# Point to lib64 where the libraries are actually installed.
 cmake -G "Ninja" \
     -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
     -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
@@ -110,8 +115,9 @@ echo ">>> Step 7: Configuring OpenSSL for OQS Provider..."
 # Manually configure openssl.cnf to activate the provider.
 OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
 sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
-sed -i "s#\[default_sect\]#\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so\n#g" ${OPENSSL_CNF_PATH}
+sed -i "s#\[provider_sect\]#\[provider_sect\]\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
 echo ">>> OpenSSL configured for OQS Provider."
+
 
 # --- 8. Build and Install Nginx ---
 echo ">>> Step 8: Building and installing Nginx..."
