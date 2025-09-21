@@ -108,9 +108,9 @@ echo ">>> Step 7: Configuring OpenSSL for OQS Provider..."
 # to activate the provider.
 OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
 # Add the oqsprovider to the provider list
-sed -i "s/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g" ${OPENSSL_CNF_PATH}
-# Add the oqsprovider section and activate it
-sed -i "s/\[default_sect\]/\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}\/lib64\/ossl-modules\/oqsprovider.so\n/g" ${OPENSSL_CNF_PATH}
+sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
+# Add the oqsprovider section and activate it, using # as a delimiter to avoid issues with slashes in the path
+sed -i "s#\[default_sect\]#\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so\n#g" ${OPENSSL_CNF_PATH}
 echo ">>> OpenSSL configured for OQS Provider."
 
 
