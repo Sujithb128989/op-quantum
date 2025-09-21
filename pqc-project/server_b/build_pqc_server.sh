@@ -72,22 +72,21 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-# Configure without any rpath flags initially. We will set it manually after.
+# Configure without rpath; it will be set manually and robustly with patchelf.
 ./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared
 make -j$(nproc)
-# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed.
 make install
 echo ">>> Base OpenSSL installed successfully."
 
 # --- 5. Patch and Verify OpenSSL Build ---
 echo ">>> Step 5: Patching and Verifying OpenSSL build..."
-# Use patchelf to forcefully set the rpath on the openssl binary. This is the
-# most robust way to ensure it finds its own libraries and not the system's.
-patchelf --force-rpath --set-rpath "\$ORIGIN/../lib64" "${INSTALL_DIR}/bin/openssl"
-# Also patch libcrypto, as it is loaded by other components.
-patchelf --force-rpath --set-rpath "\$ORIGIN" "${INSTALL_DIR}/lib64/libcrypto.so.3"
+# Use patchelf to forcefully set the rpath. This is the most robust method.
+# The single quotes ensure '$ORIGIN' is passed literally.
+patchelf --force-rpath --set-rpath '$ORIGIN/../lib64' "${INSTALL_DIR}/bin/openssl"
 echo ">>> Verifying OpenSSL linkage..."
+# Verify that the RPATH/RUNPATH is correctly set.
 readelf -d ${INSTALL_DIR}/bin/openssl | grep -E 'RPATH|RUNPATH' || (echo "ERROR: RPATH/RUNPATH not set in openssl binary" && exit 1)
+# Verify that the dynamic linker finds the correct libraries.
 ldd ${INSTALL_DIR}/bin/openssl | grep "libssl.so.3 => ${INSTALL_DIR}" || (echo "ERROR: openssl not linked to custom libssl" && exit 1)
 echo ">>> OpenSSL build verified successfully."
 
@@ -97,11 +96,7 @@ echo ">>> Step 6: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
 # Point to lib64 where the libraries are actually installed.
-cmake -G "Ninja" \
-    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
-    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-    -S ${SRC_DIR}/liboqs
+cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
@@ -119,9 +114,10 @@ echo ">>> oqs-provider installed successfully."
 
 # --- 8. Configure OpenSSL for OQS Provider ---
 echo ">>> Step 8: Configuring OpenSSL for OQS Provider..."
-# Manually configure openssl.cnf to activate the provider.
 OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
+# Add the oqsprovider to the provider list
 sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
+# Add the oqsprovider section and activate it
 sed -i "s#\[provider_sect\]#\[provider_sect\]\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
 echo ">>> OpenSSL configured for OQS Provider."
 
@@ -132,7 +128,6 @@ cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
 # Do NOT use --with-openssl. Point to the installed libs directly.
-# Use rpath and enable-new-dtags to ensure correct runtime linking.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
