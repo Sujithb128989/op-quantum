@@ -10,7 +10,7 @@ The user interface has been redesigned with a theme inspired by the game *Hollow
 
 ## 2. How to Run the Demonstration
 
-**Prerequisite:** You must be using a **Debian-based Linux** environment (e.g., Ubuntu, Debian) running in WSL.
+**Prerequisite:** You must be using a **Debian-based Linux** environment (e.g., Kali, Ubuntu) running in WSL.
 
 **Working Directory:** All commands must be run from the **root of the `op-quantum` repository**.
 
@@ -50,12 +50,12 @@ bash pqc-project/start_server_b.sh
 *   **Goal:** Demonstrate that both servers share an identical application-layer vulnerability. This test isolates PQC as a cryptographic defense, not a fix for all security issues.
 *   **Action on Server A:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_WSL_IP>:8443
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
     ```
 *   **Expected Outcome on Server A:** The script will successfully dump table names and user data from the database. The retrieved data will be in plain text.
 *   **Action on Server B:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_WSL_IP>:9443
+    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
     ```
 *   **Expected Outcome on Server B:** The script will also succeed. This is intentional. The key difference is that any PQC-encrypted data in the database remains secure, even when retrieved.
 
@@ -77,10 +77,10 @@ bash pqc-project/start_server_b.sh
 *   **Goal:** Demonstrate the servers crashing after being overwhelmed by traffic.
 *   **Action (Server A):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_WSL_IP>:8443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
     ```
 *   **Action (Server B):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_WSL_IP>:9443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
     ```
 *   **Expected Outcome:** The Nginx process will be terminated. The script in the corresponding terminal will exit.

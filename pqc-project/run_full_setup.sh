@@ -20,7 +20,7 @@ PROJECT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # --- Step 1: Install System Dependencies ---
 echo
 echo ">>> STEP 1 of 6: Installing system dependencies..."
-bash ${PROJECT_DIR}/setup_ubuntu.sh
+bash ${PROJECT_DIR}/setup_kali.sh
 
 # --- Step 2: Make Scripts Executable ---
 echo
@@ -56,8 +56,8 @@ echo ">>> Installing Python packages. This may take a while..."
 # Point pip to the liboqs we already built for Nginx to avoid re-downloading
 export OQS_LIB_DIR="${PROJECT_DIR}/server_b/install/lib64"
 export OQS_INCLUDE_DIR="${PROJECT_DIR}/server_b/install/include"
-# Install oqs from the local zip file, forcing it to build against our liboqs
-pip install /tmp/liboqs-python-0.10.0.zip
+# Install oqs from the local zip file, forcing a clean build from source
+pip install --no-binary=:all: /tmp/liboqs-python-0.10.0.zip
 # Install the rest of the requirements
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt

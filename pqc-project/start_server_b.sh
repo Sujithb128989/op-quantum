@@ -18,6 +18,12 @@ PID_FILE="${NGINX_INSTALL_DIR}/pids/nginx_b.pid"
 APP_PY="${PROJECT_DIR}/app/app.py"
 VENV_PYTHON="${PROJECT_DIR}/../venv/bin/python3"
 
+# Set environment variables to ensure our custom libraries and configs are used.
+# This is critical for preventing system library contamination.
+export LD_LIBRARY_PATH="${PROJECT_DIR}/server_b/install/lib64"
+export OPENSSL_MODULES="${PROJECT_DIR}/server_b/install/lib64/ossl-modules"
+export OPENSSL_CONF="${PROJECT_DIR}/server_b/install/ssl/openssl.cnf"
+
 # Function to clean up background processes on exit
 cleanup() {
     echo ">>> Shutting down Server B..."
