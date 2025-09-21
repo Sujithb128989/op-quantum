@@ -72,11 +72,9 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-# Use origin-based rpath and enable-new-dtags for robust library linking.
-# This is the key fix to prevent system library contamination.
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared -Wl,-rpath,'$ORIGIN/../lib64' -Wl,--enable-new-dtags
+# Use origin-based rpath with correct shell escaping for the '$'
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared -Wl,-rpath,"\$ORIGIN/../lib64" -Wl,--enable-new-dtags
 make -j$(nproc)
-# Use 'make install' not 'install_sw' to ensure openssl.cnf is also installed.
 make install
 echo ">>> Base OpenSSL installed successfully."
 echo ">>> Verifying OpenSSL build..."
@@ -89,12 +87,7 @@ echo ">>> OpenSSL build verified successfully."
 echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-# Point to lib64 where the libraries are actually installed.
-cmake -G "Ninja" \
-    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
-    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib64 \
-    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
-    -S ${SRC_DIR}/liboqs
+cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
@@ -112,7 +105,6 @@ echo ">>> oqs-provider installed successfully."
 
 # --- 7. Configure OpenSSL for OQS Provider ---
 echo ">>> Step 7: Configuring OpenSSL for OQS Provider..."
-# Manually configure openssl.cnf to activate the provider.
 OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
 sed -i 's/default = default_sect/default = default_sect\noqsprovider = oqsprovider_sect/g' ${OPENSSL_CNF_PATH}
 sed -i "s#\[provider_sect\]#\[provider_sect\]\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
@@ -124,8 +116,6 @@ echo ">>> Step 8: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-# Do NOT use --with-openssl. Point to the installed libs directly.
-# Use rpath and enable-new-dtags to ensure correct runtime linking.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
