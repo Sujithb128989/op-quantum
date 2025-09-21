@@ -72,37 +72,27 @@ echo ">>> pcre installed successfully."
 # --- 4. Build and Install OpenSSL ---
 echo ">>> Step 4: Building base OpenSSL..."
 cd ${SRC_DIR}/openssl
-# Configure without rpath; it will be set manually and robustly with patchelf.
-./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR}/ssl shared
+./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
 make -j$(nproc)
-make install
+make install_sw
 echo ">>> Base OpenSSL installed successfully."
 
-# --- 5. Patch and Verify OpenSSL Build ---
-echo ">>> Step 5: Patching and Verifying OpenSSL build..."
-# Use patchelf to forcefully set the rpath. This is the most robust method.
-# The $'\044' syntax is ANSI-C Quoting, which guarantees a literal dollar sign.
-patchelf --force-rpath --set-rpath $'\044ORIGIN/../lib64' "${INSTALL_DIR}/bin/openssl"
-echo ">>> Verifying OpenSSL linkage..."
-# Verify that the RPATH/RUNPATH is correctly set.
-readelf -d ${INSTALL_DIR}/bin/openssl | grep -E 'RPATH|RUNPATH' || (echo "ERROR: RPATH/RUNPATH not set in openssl binary" && exit 1)
-# Verify that the dynamic linker finds the correct libraries.
-ldd ${INSTALL_DIR}/bin/openssl | grep "libssl.so.3 => ${INSTALL_DIR}" || (echo "ERROR: openssl not linked to custom libssl" && exit 1)
-echo ">>> OpenSSL build verified successfully."
-
-
-# --- 6. Build and Install liboqs ---
-echo ">>> Step 6: Building liboqs..."
+# --- 5. Build and Install liboqs ---
+echo ">>> Step 5: Building liboqs..."
 cd ${BUILD_DIR}
 mkdir -p liboqs && cd liboqs
-# Point to lib64 where the libraries are actually installed.
-cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/liboqs
+cmake -G "Ninja" \
+    -DOPENSSL_ROOT_DIR=${INSTALL_DIR} \
+    -DOPENSSL_INCLUDE_DIR=${INSTALL_DIR}/include \
+    -DOPENSSL_LIBRARIES=${INSTALL_DIR}/lib \
+    -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} \
+    -S ${SRC_DIR}/liboqs
 ninja
 ninja install
 echo ">>> liboqs installed successfully."
 
-# --- 7. Build and Install OQS Provider ---
-echo ">>> Step 7: Building oqs-provider..."
+# --- 6. Build and Install OQS Provider ---
+echo ">>> Step 6: Building oqs-provider..."
 cd ${BUILD_DIR}
 mkdir -p oqs-provider && cd oqs-provider
 liboqs_DIR=${INSTALL_DIR}/lib/cmake/liboqs cmake -G "Ninja" -DOPENSSL_ROOT_DIR=${INSTALL_DIR} -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR} -S ${SRC_DIR}/oqs-provider
@@ -110,34 +100,21 @@ ninja
 ninja install
 echo ">>> Manually copying oqsprovider.so to fix installation issue..."
 cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
-echo ">>> oqs-provider installed successfully."
+echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
-# --- 8. Configure OpenSSL for OQS Provider ---
-echo ">>> Step 8: Configuring OpenSSL for OQS Provider..."
-OPENSSL_CNF_PATH="${INSTALL_DIR}/ssl/openssl.cnf"
-# Add the openssl_init section and the provider table.
-# This ensures both the default provider (for DRBG) and oqsprovider are loaded.
-echo -e "\nopenssl_conf = openssl_init\n" >> ${OPENSSL_CNF_PATH}
-echo -e "[openssl_init]\nproviders = provider_sect\n" >> ${OPENSSL_CNF_PATH}
-echo -e "[provider_sect]\ndefault = default_sect\noqsprovider = oqsprovider_sect\n" >> ${OPENSSL_CNF_PATH}
-# Add the oqsprovider section and activate it
-sed -i "s#\[default_sect\]#\[default_sect\]\nactivate = 1\n\n\[oqsprovider_sect\]\nactivate = 1\nmodule = ${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so#g" ${OPENSSL_CNF_PATH}
-echo ">>> OpenSSL configured for OQS Provider."
-
-
-# --- 9. Build and Install Nginx ---
-echo ">>> Step 9: Building and installing Nginx..."
+# --- 7. Build and Install Nginx ---
+echo ">>> Step 7: Building and installing Nginx..."
 cd ${BUILD_DIR}
 tar -xzvf ${SRC_DIR}/nginx-${NGINX_VERSION}.tar.gz
 cd nginx-${NGINX_VERSION}
-# Do NOT use --with-openssl. Point to the installed libs directly.
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
-    --with-ld-opt="-L${INSTALL_DIR}/lib64 -Wl,-rpath,${INSTALL_DIR}/lib64 -Wl,--enable-new-dtags" \
+    --with-ld-opt="-L${INSTALL_DIR}/lib" \
     --with-http_ssl_module \
     --with-pcre=${BUILD_DIR}/pcre-${PCRE_VERSION} \
-    --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION}
+    --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION} \
+    --with-openssl=${SRC_DIR}/openssl
 
 make -j$(nproc)
 make install

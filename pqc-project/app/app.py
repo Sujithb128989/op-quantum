@@ -67,22 +67,33 @@ def index():
 def messaging():
     if 'username' not in session:
         session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
-    return render_template('messaging.html', app_mode=APP_MODE)
+    # Pass an empty list for search results on default page load
+    return render_template('messaging.html', user_search_results=[], app_mode=APP_MODE)
 
-@app.route('/search', methods=['GET', 'POST'])
+@app.route('/search', methods=['POST'])
 def search():
-    results = []
-    if request.method == 'POST':
-        search_term = request.form['search_term']
-        db = get_db()
+    """
+    This search function is intentionally vulnerable to SQL injection.
+    It is for educational and demonstration purposes only.
+    """
+    if 'username' not in session:
+        session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
 
-        # WARNING: This is deliberately vulnerable to SQL Injection on both servers
-        # as per the demonstration requirements. The only difference between
-        # the servers is intended to be the PQC encryption.
-        query = f"SELECT username, 'password' as password_hash FROM users WHERE username LIKE '%{search_term}%'"
-        results = db.execute(query).fetchall()
+    search_term = request.form.get('query', '')
+    db = get_db()
 
-    return render_template('search.html', results=results, app_mode=APP_MODE)
+    # --- INTENTIONAL VULNERABILITY ---
+    # The following code constructs a SQL query using unsafe string concatenation.
+    # This is the source of the SQL injection vulnerability.
+    # In a real application, you should ALWAYS use parameterized queries.
+    # For example: db.execute("... WHERE username LIKE ?", ('%' + search_term + '%',))
+    vulnerable_query = "SELECT username, password FROM users WHERE username LIKE '%" + search_term + "%'"
+    # --- END INTENTIONAL VULNERABILITY ---
+
+    results = db.execute(vulnerable_query).fetchall()
+
+    # Render the messaging page, passing the search results to be displayed in the user list.
+    return render_template('messaging.html', user_search_results=results, app_mode=APP_MODE)
 
 # --- API Endpoints for Messaging GUI ---
 @app.route('/api/get_current_user')

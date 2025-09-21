@@ -1,8 +1,8 @@
 #!/bin/bash
 #
-# setup_ubuntu.sh
+# setup_kali.sh
 #
-# This script should be run on a Debian-based Linux distribution (like Ubuntu).
+# This script should be run on a Debian-based Linux distribution (like Kali or Ubuntu).
 # It installs all the necessary packages required to compile the project components.
 #
 
@@ -23,8 +23,7 @@ sudo apt-get install -y \
     libssl-dev \
     unzip \
     wget \
-    perl \
-    patchelf
+    perl
 
 echo "=============================================================="
 echo ">>> Dependency installation complete!"

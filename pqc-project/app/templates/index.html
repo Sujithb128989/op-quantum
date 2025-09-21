@@ -3,43 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PQC Demonstration</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <title>CryptoGuard - {% if app_mode == 'secure' %}PQC Hardened{% else %}RSA Encryption{% endif %} Solutions</title>
+    <style>
+        :root {
+            --primary-color: {% if app_mode == 'secure' %}#0bffbc{% else %}#7877c6{% endif %};
+            --secondary-color: {% if app_mode == 'secure' %}#7877c6{% else %}#ffbe0b{% endif %};
+            --primary-glow-color: {% if app_mode == 'secure' %}rgba(11, 255, 188, 0.3){% else %}rgba(120, 119, 198, 0.3){% endif %};
+            --secondary-glow-color: {% if app_mode == 'secure' %}rgba(120, 119, 198, 0.15){% else %}rgba(255, 190, 11, 0.15){% endif %};
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #0a0e27;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        .background-animation {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 20% 80%, var(--primary-glow-color) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 20%, var(--secondary-glow-color) 0%, transparent 50%);
+            z-index: -2;
+        }
+        .grid-pattern {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(rgba(120, 119, 198, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(120, 119, 198, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px; z-index: -1; opacity: 0.5;
+        }
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0;
+            background: rgba(10, 14, 39, 0.9); backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(120, 119, 198, 0.2);
+            z-index: 1000; padding: 1rem 0;
+        }
+        .nav-container { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 2rem; }
+        .logo { font-size: 1.5rem; font-weight: 700; color: var(--primary-color); text-decoration: none; }
+        .cta-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none; padding: 0.75rem 1.5rem; border-radius: 8px;
+            color: #0a0e27; font-weight: 600; text-decoration: none; transition: transform 0.3s ease;
+        }
+        .cta-button:hover { transform: translateY(-2px); }
+        .hero { min-height: 100vh; display: flex; align-items: center; padding-top: 80px; }
+        .hero-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+        .hero-content h1 {
+            font-size: 3.5rem; font-weight: 700; margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff, var(--primary-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            line-height: 1.2;
+        }
+        .hero-subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; font-weight: 400; }
+        .hero-buttons { display: flex; gap: 1rem; }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none; padding: 1rem 2rem; border-radius: 12px; color: #0a0e27;
+            font-weight: 600; font-size: 1rem; text-decoration: none; display: inline-block; transition: all 0.3s ease;
+        }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 20px 40px var(--primary-glow-color); }
+        .btn-secondary {
+            border: 2px solid var(--primary-color); background: transparent; padding: 1rem 2rem;
+            border-radius: 12px; color: var(--primary-color); font-weight: 600;
+            font-size: 1rem; text-decoration: none; display: inline-block; transition: all 0.3s ease;
+        }
+        .btn-secondary:hover { background: var(--primary-color); color: #0a0e27; }
+        .hero-visual { position: relative; height: 500px; display: flex; align-items: center; justify-content: center; }
+        .encryption-demo {
+            background: rgba(15, 23, 42, 0.8); border: 1px solid var(--primary-glow-color);
+            border-radius: 16px; padding: 2rem; width: 100%; max-width: 400px; backdrop-filter: blur(20px);
+        }
+        .demo-header { color: var(--primary-color); font-size: 1.1rem; font-weight: 600; margin-bottom: 1.5rem; text-align: center; }
+        .encryption-flow { display: flex; flex-direction: column; gap: 1rem; }
+        .flow-step { background: rgba(30, 41, 59, 0.8); border-radius: 8px; padding: 1rem; border-left: 3px solid var(--primary-color); }
+        .step-label { color: var(--secondary-color); font-size: 0.8rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .step-content { font-family: 'Monaco', 'Consolas', monospace; font-size: 0.85rem; color: #e2e8f0; }
+        .animated-arrow { text-align: center; color: var(--primary-color); font-size: 1.5rem; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+        .explanation-section { padding: 6rem 0; background: rgba(15, 23, 42, 0.5); }
+        .explanation-container { max-width: 1000px; margin: 0 auto; padding: 0 2rem; }
+        .explanation-title {
+            font-size: 2.5rem; font-weight: 700; margin-bottom: 2rem; text-align: center;
+            background: linear-gradient(135deg, #ffffff, var(--primary-color));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+        }
+        .crypto-section {
+            background: rgba(30, 41, 59, 0.6); border: 1px solid var(--primary-glow-color);
+            border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem; backdrop-filter: blur(10px);
+        }
+        .crypto-section h3 {
+            color: var(--primary-color); font-size: 1.8rem; margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--primary-glow-color); padding-bottom: 0.5rem;
+        }
+        .crypto-section h4 { color: var(--secondary-color); font-size: 1.3rem; margin-bottom: 1rem; margin-top: 2rem; }
+        .crypto-section p { color: #e2e8f0; line-height: 1.8; margin-bottom: 1.5rem; font-size: 1.05rem; }
+        .info-box {
+            background: rgba(15, 23, 42, 0.8); border-radius: 12px; padding: 2rem;
+            margin: 2rem 0; border: 1px solid var(--primary-glow-color);
+        }
+        .info-box ol, .info-box ul { color: #e2e8f0; margin-left: 2rem; }
+        .info-box li { margin-bottom: 1rem; line-height: 1.7; font-size: 1rem; }
+        .math-example {
+            background: rgba(10, 14, 27, 0.9); border: 2px solid var(--primary-glow-color);
+            border-radius: 12px; padding: 2rem; font-family: 'Monaco', 'Consolas', monospace;
+            color: var(--primary-color); margin: 2rem 0; white-space: pre-line; font-size: 1rem; line-height: 1.6;
+        }
+        .vulnerability-box {
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.1), rgba(255, 190, 11, 0.05));
+            border: 2px solid rgba(255, 107, 107, 0.3); border-radius: 12px; padding: 2rem; margin: 2rem 0;
+        }
+        .vulnerability-box h4 { color: #ff6b6b; margin-bottom: 1rem; }
+        .vulnerability-box p { color: #e2e8f0; }
+        .footer { background: rgba(15, 23, 42, 0.8); border-top: 1px solid rgba(120, 119, 198, 0.2); padding: 3rem 0 2rem; }
+        .footer-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; text-align: center; }
+        .footer-text { color: #64748b; font-size: 0.9rem; }
+    </style>
 </head>
 <body>
-    <div class="background-container"></div>
-    <div class="main-container">
-        <header>
-            <h1>Post-Quantum Cryptography</h1>
-            <p>A Demonstration of Next-Generation Digital Defense</p>
-        </header>
+    <div class="background-animation"></div>
+    <div class="grid-pattern"></div>
 
-        <nav>
-            <a href="{{ url_for('index') }}">Home</a>
-            <a href="{{ url_for('messaging') }}">Messenger</a>
-            <a href="{{ url_for('search') }}">Database Search</a>
-        </nav>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">{% if app_mode == 'secure' %}🛡️{% else %}🔐{% endif %} CryptoGuard</a>
+            <a href="/messaging" class="cta-button">Try Messaging Demo</a>
+        </div>
+    </nav>
 
-        <main class="content-card">
-            <h2>The Quantum Threat is Here</h2>
-            <p>
-                Welcome. This project demonstrates the need for Post-Quantum Cryptography (PQC) by running two parallel servers. While they share this user interface, their underlying security architecture is vastly different.
-            </p>
-            <ul>
-                <li><strong>Server A (Classic Server):</strong> This server runs on standard TLS encryption (like RSA). It is strong by today's standards, but will be vulnerable to decryption by future quantum computers.</li>
-                <li><strong>Server B (PQC-Enabled Server):</strong> This server uses PQC algorithms (Kyber and Dilithium) for both data-in-transit (TLS) and data-at-rest (database encryption). It is secure against both classical and quantum attacks.</li>
-            </ul>
-            <p>
-                Both servers are intentionally built with the same application-level vulnerabilities to demonstrate that PQC is a defense against cryptographic threats, not a replacement for secure coding practices.
-            </p>
-        </main>
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                {% if app_mode == 'secure' %}
+                    <h1>Post-Quantum Ready Encryption</h1>
+                    <p class="hero-subtitle">Explore the future of secure communication with Post-Quantum Cryptography. Understand how new algorithms are designed to resist attacks from both classical and quantum computers.</p>
+                {% else %}
+                    <h1>Git Gud at RSA Encryption</h1>
+                    <p class="hero-subtitle">Master the fundamentals of RSA cryptography through interactive demonstrations. Understand how prime factorization secures digital communications in our quantum-vulnerable world.</p>
+                {% endif %}
+                <div class="hero-buttons">
+                    <a href="/messaging" class="btn-primary">Start Interactive Demo →</a>
+                    <a href="#explanation" class="btn-secondary">Learn Fundamentals</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="encryption-demo">
+                    {% if app_mode == 'secure' %}
+                        <div class="demo-header">🛡️ PQC Encryption Live Demo</div>
+                        <div class="encryption-flow">
+                            <div class="flow-step"><div class="step-label">1. KEM Mechanism</div><div class="step-content">Kyber-1024 (NIST Standard)</div></div>
+                            <div class="animated-arrow">↓</div>
+                            <div class="flow-step"><div class="step-label">2. Key Encapsulation</div><div class="step-content">Generate Ciphertext & Shared Secret</div></div>
+                            <div class="animated-arrow">↓</div>
+                            <div class="flow-step"><div class="step-label">3. Secure Transmission</div><div class="step-content">Shared Secret used for AES/ChaCha</div></div>
+                        </div>
+                    {% else %}
+                        <div class="demo-header">🔐 RSA Encryption Live Demo</div>
+                        <div class="encryption-flow">
+                            <div class="flow-step"><div class="step-label">1. Key Generation</div><div class="step-content">p = 61, q = 53<br>n = p × q = 3233</div></div>
+                            <div class="animated-arrow">↓</div>
+                            <div class="flow-step"><div class="step-label">2. Public Key</div><div class="step-content">(e=17, n=3233)</div></div>
+                            <div class="animated-arrow">↓</div>
+                            <div class="flow-step"><div class="step-label">3. Encryption</div><div class="step-content">C = M^17 mod 3233</div></div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </section>
 
-        <footer>
-            <p>Demonstration running in <strong>{{ app_mode }}</strong> mode.</p>
-        </footer>
-    </div>
+    <section class="explanation-section" id="explanation">
+        <div class="explanation-container">
+            {% if app_mode == 'secure' %}
+                <h2 class="explanation-title">Understanding Post-Quantum Cryptography (PQC)</h2>
+                <div class="crypto-section">
+                    <h3>The Need for a Quantum-Resistant Future</h3>
+                    <p>Classical cryptographic algorithms, such as RSA and Elliptic Curve Cryptography (ECC), are the bedrock of modern digital security. However, their security relies on mathematical problems that are easily solved by large-scale quantum computers. The development of such computers poses a catastrophic threat to our digital infrastructure.</p>
+                    <p>Post-Quantum Cryptography (PQC) is dedicated to developing new algorithms that are secure against attacks from both classical and quantum computers, based on different mathematical problems believed to be hard even for a quantum computer.</p>
+                    <h4>Categories of PQC Algorithms</h4>
+                    <div class="info-box">
+                        <ul>
+                            <li><strong>Lattice-Based Cryptography:</strong> Including the NIST-standardized Kyber, these base their security on finding the shortest vector in a high-dimensional lattice. They are efficient and a leading choice for general-purpose PQC.</li>
+                            <li><strong>Code-Based Cryptography:</strong> Based on the difficulty of decoding a general linear code, like Classic McEliece.</li>
+                            <li><strong>Hash-Based Signatures:</strong> Schemes like SPHINCS+ rely on the security of cryptographic hash functions, making them well-understood.</li>
+                        </ul>
+                    </div>
+                </div>
+            {% else %}
+                <h2 class="explanation-title">Understanding RSA Encryption</h2>
+                <div class="crypto-section">
+                    <h3>What is RSA Encryption?</h3>
+                    <p>RSA (Rivest-Shamir-Adleman) is an asymmetric cryptographic algorithm that uses two different keys. Its security is based on the mathematical difficulty of factoring large numbers. While it's easy to multiply two large prime numbers, the reverse process requires exponential time on classical computers.</p>
+                    <h4>How RSA Works: Step-by-Step Process</h4>
+                    <div class="info-box">
+                        <ol>
+                            <li><strong>Choose two large prime numbers:</strong> p and q.</li>
+                            <li><strong>Compute n = p × q:</strong> This creates the RSA modulus n.</li>
+                            <li><strong>Calculate φ(n) = (p-1) × (q-1):</strong> Euler's totient function.</li>
+                            <li><strong>Choose encryption exponent e:</strong> such that 1 < e < φ(n) and is coprime to φ(n).</li>
+                            <li><strong>Calculate decryption exponent d:</strong> the modular multiplicative inverse of e.</li>
+                            <li><strong>Form key pairs:</strong> Public key is (e, n) and private key is (d, n).</li>
+                        </ol>
+                    </div>
+                    <div class="vulnerability-box">
+                        <h4>⚠ Quantum Computing Threat</h4>
+                        <p>While RSA is strong against classical computers, it is vulnerable to quantum computers running Shor's algorithm, which can efficiently solve the integer factorization problem. This is the primary motivation for developing Post-Quantum Cryptography.</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">© 2025 CryptoGuard. Educational cryptography platform.</p>
+        </div>
+    </footer>
 </body>
 </html>
