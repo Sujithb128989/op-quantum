@@ -1,4 +1,5 @@
 Flask
+oqs
 cryptography
 Markdown
 gunicorn
