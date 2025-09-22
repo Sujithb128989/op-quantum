@@ -7,6 +7,7 @@ import threading
 import markdown
 import random
 import string
+import base64
 from flask import Flask, request, session, redirect, url_for, render_template, g, jsonify
 
 # --- Local Imports ---
@@ -120,13 +121,20 @@ def get_messages():
         message_data = dict(row)
         if APP_MODE == 'secure' and message_data['encrypted_key'] is not None:
             try:
+                # Decrypt the message text for display in the UI
                 decrypted_text = pqc_crypto_instance.decrypt(message_data['encrypted_key'], message_data['message_text'])
                 message_data['message_text'] = decrypted_text.decode('utf-8', 'replace')
-            except Exception:
+            except Exception as e:
+                print(f"Decryption failed: {e}", file=sys.stderr)
                 message_data['message_text'] = "[Decryption Error: Unable to read message]"
+
+            # Encode the raw bytes of the key to Base64 so it can be sent in JSON
+            message_data['encrypted_key'] = base64.b64encode(message_data['encrypted_key']).decode('utf-8')
         else:
+            # In vulnerable mode, the message is just bytes that need decoding
             if isinstance(message_data['message_text'], bytes):
                 message_data['message_text'] = message_data['message_text'].decode('utf-8', 'replace')
+
         messages.append(message_data)
 
     return jsonify(messages)
