@@ -47,6 +47,8 @@ sed "s|__CERT_PATH__|${CERT_FILE}|g; s|__KEY_PATH__|${KEY_FILE}|g" "${NGINX_CONF
 
 # Start Nginx in the background
 echo ">>> Starting Nginx for Server A..."
+# Ensure the directory for the PID file exists
+mkdir -p "${NGINX_INSTALL_DIR}/pids"
 # Copy the dynamically generated config file to the location Nginx expects
 cp "${TEMP_NGINX_CONF}" "${NGINX_INSTALL_DIR}/conf/nginx.conf"
 rm "${TEMP_NGINX_CONF}" # Clean up temp file
