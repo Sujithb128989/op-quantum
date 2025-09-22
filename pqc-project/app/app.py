@@ -23,7 +23,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database.db')
 pqc_crypto_instance = None
 NGINX_PID_FILE = None
 REQUEST_COUNT = 0
-REQUEST_LIMIT = 200
+REQUEST_LIMIT = 5000
 counter_lock = threading.Lock()
 OTHER_SERVER_URL = None
 
@@ -42,7 +42,11 @@ def check_request_limit():
                     os.kill(pid, signal.SIGKILL)
                 except Exception as e:
                     print(f"!!!!!! Could not terminate Nginx process: {e} !!!!!!", file=sys.stderr)
-            elif REQUEST_COUNT % 100 == 0:
+                finally:
+                    print(f"!!!!!! SERVER SHUTTING DOWN DUE TO REQUEST LIMIT. !!!!!!", file=sys.stderr)
+                    # Use os._exit to force immediate exit without cleanup, simulating a crash
+                    os._exit(1)
+            elif REQUEST_COUNT % 1000 == 0:
                 print(f"[INFO] Request count: {REQUEST_COUNT}/{REQUEST_LIMIT}", file=sys.stderr)
 
 # --- Database Helper ---
