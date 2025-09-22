@@ -30,8 +30,8 @@ cleanup() {
 trap cleanup EXIT
 
 # --- Pre-flight Checks ---
-CERT_FILE="${PROJECT_DIR}/server_b.crt"
-KEY_FILE="${PROJECT_DIR}/server_b.key"
+CERT_FILE="${PROJECT_DIR}/server_b/server_b.crt"
+KEY_FILE="${PROJECT_DIR}/server_b/server_b.key"
 if [ ! -f "${CERT_FILE}" ]; then
     echo ">>> Certificate not found. Please run 'generate_certs.sh' first."
     exit 1
@@ -50,7 +50,7 @@ echo ">>> Starting Nginx for Server B..."
 cp "${TEMP_NGINX_CONF}" "${NGINX_INSTALL_DIR}/conf/nginx.conf"
 rm "${TEMP_NGINX_CONF}" # Clean up temp file
 # The -p flag sets the prefix path, and Nginx will now find its config by default
-${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
+sudo ${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
 
 # Wait a moment for Nginx to start
 sleep 2
