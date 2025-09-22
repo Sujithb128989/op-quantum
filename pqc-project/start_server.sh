@@ -66,8 +66,17 @@ echo ">>> Starting Nginx for ${SERVER_NAME}..."
 ${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/ -g 'daemon off;' &
 NGINX_PID=$!
 
+# Start the log watcher to enforce a request limit and shut down the server.
+# This provides a predictable crash scenario for the demonstration.
+WATCHER_LOG="${NGINX_INSTALL_DIR}/logs/access.log"
+WATCHER_PID_FILE="${NGINX_INSTALL_DIR}/pids/nginx_${SERVER_ID}.pid"
+bash "${PROJECT_DIR}/log_watcher.sh" "${WATCHER_LOG}" "${WATCHER_PID_FILE}" &
+WATCHER_PID=$!
+
+
 # --- Cleanup ---
-trap 'echo ">>> Shutting down ${SERVER_NAME}..."; kill ${NGINX_PID};' EXIT
+# Ensure both Nginx and the watcher script are terminated on exit.
+trap 'echo ">>> Shutting down ${SERVER_NAME}..."; kill ${NGINX_PID} ${WATCHER_PID} 2>/dev/null;' EXIT
 
 # --- Start Python Backend ---
 echo ">>> Starting Python backend for ${SERVER_NAME} in '${APP_MODE}' mode..."
