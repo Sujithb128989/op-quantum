@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SilkWeave - Post-Quantum Cryptography</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'SF Pro Display', sans-serif;
+            background: #0d0a0f;
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Silk/Thread animations - Silksong aesthetic */
+        .silk-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 25% 25%, rgba(219, 112, 147, 0.2) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(255, 20, 147, 0.15) 0%, transparent 50%),
+                        radial-gradient(circle at 50% 10%, rgba(138, 43, 226, 0.18) 0%, transparent 50%);
+            z-index: -2;
+        }
+
+        .silk-threads {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, rgba(219, 112, 147, 0.1) 1px, transparent 1px),
+                linear-gradient(-45deg, rgba(255, 20, 147, 0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            opacity: 0.6;
+            animation: silkFlow 12s ease-in-out infinite;
+        }
+
+        @keyframes silkFlow {
+            0%, 100% { transform: translate(0, 0) scale(1); opacity: 0.6; }
+            50% { transform: translate(20px, -20px) scale(1.05); opacity: 0.8; }
+        }
+
+        /* Navigation */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(13, 10, 15, 0.9);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(219, 112, 147, 0.3);
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #db7093;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: #e2e8f0;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: #db7093;
+        }
+
+        .cta-button {
+            background: linear-gradient(135deg, #db7093, #ff1493);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            color: #ffffff;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding-top: 80px;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, #ffffff, #db7093);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            justify-content: flex-start;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #db7093, #ff1493);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: #ffffff;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px rgba(219, 112, 147, 0.3);
+        }
+
+        .btn-secondary {
+            border: 2px solid #db7093;
+            background: transparent;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            color: #db7093;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #db7093;
+            color: #ffffff;
+        }
+
+        .trust-indicators {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            opacity: 0.8;
+        }
+
+        .trust-text {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .trust-logos {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .trust-logos span {
+            padding: 0.5rem 1rem;
+            background: rgba(219, 112, 147, 0.1);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #db7093;
+        }
+
+        /* Hero Visual */
+        .hero-visual {
+            position: relative;
+            height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .silk-demo {
+            background: rgba(21, 18, 24, 0.8);
+            border: 1px solid rgba(219, 112, 147, 0.3);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 400px;
+            backdrop-filter: blur(20px);
+        }
+
+        .demo-header {
+            color: #db7093;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .silk-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .flow-step {
+            background: rgba(30, 25, 35, 0.8);
+            border-radius: 8px;
+            padding: 1rem;
+            border-left: 3px solid #db7093;
+        }
+
+        .step-label {
+            color: #ff1493;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .step-content {
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+
+        .animated-arrow {
+            text-align: center;
+            color: #db7093;
+            font-size: 1.5rem;
+            animation: silkPulse 3s infinite;
+        }
+
+        @keyframes silkPulse {
+            0%, 100% { opacity: 0.5; transform: scale(1) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.1) rotate(5deg); }
+        }
+
+        /* Detailed Explanation Section */
+        .explanation-section {
+            padding: 6rem 0;
+            background: rgba(21, 18, 24, 0.3);
+        }
+
+        .explanation-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .explanation-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, #ffffff, #db7093);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .crypto-section {
+            background: rgba(30, 25, 35, 0.6);
+            border: 1px solid rgba(219, 112, 147, 0.2);
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .crypto-section h3 {
+            color: #db7093;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid rgba(219, 112, 147, 0.3);
+            padding-bottom: 0.5rem;
+        }
+
+        .crypto-section h4 {
+            color: #ff1493;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+        }
+
+        .crypto-section p {
+            color: #e2e8f0;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+            font-size: 1.05rem;
+        }
+
+        .pqc-steps {
+            background: rgba(21, 18, 24, 0.8);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 1px solid rgba(219, 112, 147, 0.3);
+        }
+
+        .pqc-steps ol {
+            color: #e2e8f0;
+            margin-left: 2rem;
+        }
+
+        .pqc-steps li {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+            font-size: 1rem;
+        }
+
+        .math-example {
+            background: rgba(13, 10, 15, 0.9);
+            border: 2px solid rgba(219, 112, 147, 0.4);
+            border-radius: 12px;
+            padding: 2rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            color: #db7093;
+            margin: 2rem 0;
+            white-space: pre-line;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        .silk-advantage-box {
+            background: linear-gradient(135deg, rgba(255, 20, 147, 0.15), rgba(219, 112, 147, 0.1));
+            border: 2px solid rgba(219, 112, 147, 0.4);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .silk-advantage-box h4 {
+            color: #ff1493;
+            margin-bottom: 1rem;
+        }
+
+        .silk-advantage-box p {
+            color: #e2e8f0;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, rgba(219, 112, 147, 0.1), rgba(255, 20, 147, 0.05));
+        }
+
+        .cta-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+
+        .cta-description {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer */
+        .footer {
+            background: rgba(21, 18, 24, 0.8);
+            border-top: 1px solid rgba(219, 112, 147, 0.2);
+            padding: 3rem 0 2rem;
+        }
+
+        .footer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        .footer-text {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .hero-content h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="silk-background"></div>
+    <div class="silk-threads"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">🕷️ SilkWeave</a>
+            <ul class="nav-links">
+                <li><a href="#explanation">PQC Guide</a></li>
+                <li><a href="#demo">Interactive Demo</a></li>
+                <li><a href="#algorithms">Algorithms</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <a href="messaging.html" class="cta-button">Try Silk-Secure Demo</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1>Git Gud at Post-Quantum Cryptography</h1>
+                <p class="hero-subtitle">Master the silk-strong security of NIST-standardized post-quantum algorithms. Weave unbreakable protection against both classical and quantum computer attacks [web:111][web:113].</p>
+                
+                <div class="hero-buttons">
+                    <a href="messaging.html" class="btn-primary">Experience Kyber & Dilithium →</a>
+                    <a href="#explanation" class="btn-secondary">Learn PQC Silk-craft</a>
+                </div>
+
+                <div class="trust-indicators">
+                    <span class="trust-text">NIST Standardized Algorithms</span>
+                    <div class="trust-logos">
+                        <span>🕸️ ML-KEM</span>
+                        <span>🪡 ML-DSA</span>
+                        <span>🛡️ Silk-Safe</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="hero-visual">
+                <div class="silk-demo">
+                    <div class="demo-header">🕷️ Kyber Silk Encryption</div>
+                    <div class="silk-flow">
+                        <div class="flow-step">
+                            <div class="step-label">1. Silk Lattice Weaving</div>
+                            <div class="step-content">A ∈ R_q^(k×ℓ)<br>LWE Silk Matrix</div>
+                        </div>
+                        <div class="animated-arrow">🪡</div>
+                        <div class="flow-step">
+                            <div class="step-label">2. Thread Encapsulation</div>
+                            <div class="step-content">c = (u, v) = SilkEncrypt(pk, m)</div>
+                        </div>
+                        <div class="animated-arrow">🪡</div>
+                        <div class="flow-step">
+                            <div class="step-label">3. Unbreakable Silk Key</div>
+                            <div class="step-content">K = KDF(m) | Quantum-Resistant</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Detailed PQC Explanation -->
+    <section class="explanation-section" id="explanation">
+        <div class="explanation-container">
+            <h2 class="explanation-title">Post-Quantum Silk Cryptography</h2>
+            
+            <div class="crypto-section">
+                <h3>NIST-Standardized Quantum-Resistant Algorithms</h3>
+                <p>In August 2024, NIST published the first three post-quantum cryptography standards, marking a historic milestone in cybersecurity. These algorithms are specifically designed to resist attacks from both classical and quantum computers, ensuring long-term security in the quantum computing era [web:111][web:113][web:116].</p>
+                
+                <p>The standardized algorithms include <strong>ML-KEM</strong> (derived from CRYSTALS-Kyber) for key encapsulation, <strong>ML-DSA</strong> (derived from CRYSTALS-Dilithium) for digital signatures, and <strong>SLH-DSA</strong> (derived from SPHINCS+) for hash-based signatures. These represent years of rigorous analysis and testing through NIST's public competition [web:116].</p>
+
+                <h4>ML-KEM (CRYSTALS-Kyber): Silk-Strong Key Encapsulation</h4>
+                <p>Kyber is a key encapsulation mechanism (KEM) that securely establishes shared secrets between parties. Like the intricate silk webs of Pharloom [web:133], Kyber's security is woven from the <strong>Learning With Errors (LWE)</strong> problem over polynomial rings, which remains computationally hard even for quantum computers [web:114][web:115].</p>
+                
+                <div class="pqc-steps">
+                    <h4>Kyber Silk Weaving Process:</h4>
+                    <ol>
+                        <li><strong>Silk Matrix Generation:</strong> Create a random matrix A ∈ R_q^(k×ℓ) where R_q = Z_q[X]/(X^n + 1) with n=256 [web:114]</li>
+                        <li><strong>Secret Thread Sampling:</strong> Generate secret vectors s₁, s₂ with small coefficients from a centered binomial distribution [web:114]</li>
+                        <li><strong>Public Silk Computation:</strong> Calculate t = A·s₁ + s₂ mod q, creating the LWE silk instance [web:114]</li>
+                        <li><strong>Silk Pair Formation:</strong> Public silk = (A, t), Private silk = s₁ [web:114]</li>
+                    </ol>
+                </div>
+
+                <h4>Mathematical Foundation</h4>
+                <p>Kyber's security relies on the Module-LWE problem, a structured variant of the Learning With Errors problem. The silk encryption process involves:</p>
+
+                <div class="math-example">Silk Encapsulation Process:
+• Generate random silk fibers r, e₁, e₂ with small norms
+• Compute u = Aᵀr + e₁ (silk ciphertext component)
+• Encode message M and compute v = tᵀr + e₂ + Encode(M)
+• Silk Ciphertext = (u, v)
+
+Silk Decapsulation Process:
+• Compute M' = v - s₁ᵀu (recovers M + small error)
+• Apply deterministic silk decoder to extract exact M
+• Derive final key K = KDF(M)</div>
+
+                <h4>ML-DSA (CRYSTALS-Dilithium): Silk-Signed Security</h4>
+                <p>Dilithium provides digital signatures that remain secure against quantum attacks. Like Hornet's precise needle techniques [web:88][web:133], it uses a Fiat-Shamir with aborts approach, based on the hardness of the Module-SIS (Short Integer Solution) problem [web:114][web:115].</p>
+
+                <p>Unlike RSA signatures that rely on trapdoor functions, Dilithium signatures demonstrate knowledge of a secret lattice vector without revealing it. The signer proves they know short vectors (s₁, s₂) such that A·s₁ + s₂ = t, where (A, t) is the public key [web:114].</p>
+
+                <div class="silk-advantage-box">
+                    <h4>🕷️ Silk Advantage Over Traditional Cryptography</h4>
+                    <p><strong>RSA Vulnerability:</strong> Shor's algorithm can factor large integers in polynomial time on quantum computers, completely breaking RSA security like tearing through weak threads [web:115].</p>
+                    
+                    <p><strong>Silk Thread Resistance:</strong> No known quantum algorithm provides more than quadratic speedup against lattice problems like LWE and SIS. Even Grover's algorithm only reduces security by half, requiring doubled key sizes rather than complete algorithm replacement [web:115].</p>
+
+                    <p><strong>Performance Comparison:</strong> Kyber and Dilithium achieve performance competitive with classical algorithms - Kyber key generation and encapsulation require only a few hundred thousand cycles, while Dilithium signing operates in the same ballpark as RSA-2048 [web:114].</p>
+                </div>
+
+                <h4>Implementation and Security Levels</h4>
+                <p>NIST standardized multiple security levels for both algorithms, like different silk thread strengths [web:130]:</p>
+                <ul style="color: #e2e8f0; margin-left: 2rem; margin-bottom: 1.5rem;">
+                    <li><strong>Kyber512/Dilithium2:</strong> NIST security level 1 (equivalent to AES-128)</li>
+                    <li><strong>Kyber768/Dilithium3:</strong> NIST security level 3 (equivalent to AES-192) </li>
+                    <li><strong>Kyber1024/Dilithium5:</strong> NIST security level 5 (equivalent to AES-256)</li>
+                </ul>
+
+                <p>Key sizes are larger than traditional algorithms - Kyber public keys range from 800 bytes to 1568 bytes, while Dilithium signatures range from 2420 to 4595 bytes. However, these sizes are acceptable for most applications and represent the best balance between security and efficiency in the post-quantum silk-weaving landscape [web:114].</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="cta-container">
+            <h2 class="cta-title">Ready for the Silk-Secure Future?</h2>
+            <p class="cta-description">Experience cutting-edge post-quantum cryptography through our interactive platform powered by NIST-standardized algorithms woven with silk-strong security.</p>
+            <div class="hero-buttons">
+                <a href="messaging.html" class="btn-primary">Try Silk-Safe Messaging</a>
+                <a href="#explanation" class="btn-secondary">Deep Dive into Silk Mathematics</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <p class="footer-text">© 2025 SilkWeave. Next-generation cryptography platform woven for the quantum era.</p>
+        </div>
+    </footer>
+</body>
+</html>
