@@ -31,13 +31,13 @@ For the demonstration, you will need **three separate terminal windows**, all in
 
 **Terminal 1: Start Server A**
 ```bash
-bash pqc-project/start_server_a.sh
+bash pqc-project/start_server.sh a
 ```
 *This terminal will now be occupied by the backend for Server A. Leave it running.*
 
 **Terminal 2: Start Server B**
 ```bash
-bash pqc-project/start_server_b.sh
+bash pqc-project/start_server.sh b
 ```
 *This terminal will now be occupied by the backend for Server B. Leave it running.*
 
@@ -45,42 +45,43 @@ bash pqc-project/start_server_b.sh
 
 ### Phase 3: The Demonstration Narrative
 
-#### 1. Application Vulnerability Test (SQL Injection)
+#### A. Set Attacker IP Address
+
+Before running the attacker scripts, you need to identify the IP address of your machine. In your third terminal, run the following command to find and export your IP address.
+
+```bash
+# This command finds the most likely IP address and saves it to a variable
+export KALI_IP=$(hostname -I | awk '{print $1}')
+echo "Your IP address is: ${KALI_IP}"
+```
+*You must run this command in the same terminal you use to run the attacker scripts below.*
+
+#### B. Run the Attacks
 
 *   **Goal:** Demonstrate that both servers share an identical application-layer vulnerability. This test isolates PQC as a cryptographic defense, not a fix for all security issues.
 *   **Action on Server A:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:8443
+    python3 pqc-project/attacker/sql_injector.py https://${KALI_IP}:8443
     ```
 *   **Expected Outcome on Server A:** The script will successfully dump table names and user data from the database. The retrieved data will be in plain text.
 *   **Action on Server B:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://<YOUR_KALI_IP>:9443
+    python3 pqc-project/attacker/sql_injector.py https://${KALI_IP}:9443
     ```
 *   **Expected Outcome on Server B:** The script will also succeed. This is intentional. The key difference is that any PQC-encrypted data in the database remains secure, even when retrieved.
-
-#### 2. PQC-Encrypted Messaging (Data-at-Rest)
-
-*   **Goal:** Demonstrate that messages stored by Server B are protected at-rest using PQC.
-*   **Action:** In a web browser, send a message to "gitgud" via Server B's interface.
-*   **Verification:** Examine the `database.db` file (`sqlite3 pqc-project/database.db` then `SELECT * FROM messages;`).
-*   **Expected Outcome:** The message content sent via Server B will be unreadable binary data, even after being exfiltrated via the SQL injection.
-
-#### 3. PQC-Encrypted Connection (Data-in-Transit)
-
-*   **Goal:** Demonstrate that Server B uses PQC to protect the TLS connection.
-*   **Action:** In a web browser, inspect the TLS certificate for Server B.
-*   **For detailed instructions, see the file `pqc-project/DATA_IN_TRANSIT_EXPLAINER.md`**.
-
-#### 4. High-Traffic Test ("Hard Crash")
 
 *   **Goal:** Demonstrate the servers crashing after being overwhelmed by traffic.
 *   **Action (Server A):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:8443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${KALI_IP}:8443/ -w 5000 -d 120
     ```
 *   **Action (Server B):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://<YOUR_KALI_IP>:9443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${KALI_IP}:9443/ -w 5000 -d 120
     ```
 *   **Expected Outcome:** The Nginx process will be terminated. The script in the corresponding terminal will exit.
+
+#### C. Other Demonstrations
+
+*   **PQC-Encrypted Messaging (Data-at-Rest):** In a web browser, send a message via Server B's interface. Then, examine the `database.db` file (`sqlite3 pqc-project/database.db` and `SELECT * FROM messages;`). The message content will be unreadable binary data.
+*   **PQC-Encrypted Connection (Data-in-Transit):** In a web browser, inspect the TLS certificate for Server B. For detailed instructions, see `pqc-project/DATA_IN_TRANSIT_EXPLAINER.md`.
