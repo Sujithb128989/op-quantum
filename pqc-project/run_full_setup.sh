@@ -20,7 +20,7 @@ PROJECT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 # --- Step 1: Install System Dependencies ---
 echo
 echo ">>> STEP 1 of 6: Installing system dependencies..."
-bash ${PROJECT_DIR}/setup_kali.sh
+bash ${PROJECT_DIR}/setup_ubuntu.sh
 
 # --- Step 2: Make Scripts Executable ---
 echo

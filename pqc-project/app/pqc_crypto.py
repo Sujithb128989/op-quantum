@@ -18,16 +18,16 @@ class PQCrypto:
         # Per expert advice, dynamically discover the supported KEM algorithm name
         enabled_kems = oqs.get_enabled_kem_mechanisms()
         if "ML-KEM-768" in enabled_kems:
-            kem_alg = "ML-KEM-768"
+            self.alg_name = "ML-KEM-768"
         elif "Kyber768" in enabled_kems:
-            kem_alg = "Kyber768"
+            self.alg_name = "Kyber768"
         else:
             raise RuntimeError(f"Neither ML-KEM-768 nor Kyber768 are enabled in this build of liboqs. Enabled KEMs: {enabled_kems}")
 
-        self._kem = oqs.KeyEncapsulation(kem_alg)
+        self._kem = oqs.KeyEncapsulation(self.alg_name)
         self.public_key = self._kem.generate_keypair()
         # Note: self._kem retains the private key internally after keypair generation.
-        print(f"PQC Crypto module initialized with {kem_alg}.")
+        print(f"PQC Crypto module initialized with {self.alg_name}.")
 
     def encrypt(self, plaintext: bytes) -> tuple[bytes, bytes]:
         """
@@ -45,8 +45,10 @@ class PQCrypto:
             raise TypeError("Plaintext must be bytes.")
 
         # 1. KEM: Generate an encapsulated secret and a shared secret (for the DEM).
-        # The shared secret will be used as the symmetric key.
-        encapsulated_secret, shared_secret = self._kem.encap_secret(self.public_key)
+        # Per liboqs-python examples, we create a new, "clean" KEM instance
+        # for encapsulation, which does not hold a private key.
+        with oqs.KeyEncapsulation(self.alg_name) as kem_encap:
+            encapsulated_secret, shared_secret = kem_encap.encap_secret(self.public_key)
 
         # Kyber768 produces a 32-byte shared secret, perfect for AES-256.
         aesgcm = AESGCM(shared_secret)
@@ -93,24 +95,36 @@ class PQCrypto:
 if __name__ == '__main__':
     print("--- Running PQC Crypto Module Self-Test ---")
 
-    # 1. Initialize the crypto system for a "server"
+    # 1. Initialize the crypto system for a "server" (Alice)
     server_crypto = PQCrypto()
+    alice_public_key = server_crypto.public_key
+    print(f"Alice's KEM: {server_crypto.alg_name}")
 
-    # 2. A "client" wants to encrypt data for the server.
-    original_data = b"This is a top secret message."
+    # 2. Simulate a "client" (Bob) encapsulating a secret with Alice's public key.
+    #    Bob only needs Alice's public key.
+    print("\nBob is encapsulating a secret with Alice's public key...")
+    with oqs.KeyEncapsulation(server_crypto.alg_name) as bob_kem:
+        encapsulated_secret, shared_secret_bob = bob_kem.encap_secret(alice_public_key)
+
+    print(f"Bob's encapsulated secret (first 16 bytes): {encapsulated_secret[:16].hex()}...")
+    print(f"Bob's shared secret (first 16 bytes): {shared_secret_bob[:16].hex()}...")
+
+    # 3. Alice receives the encapsulated secret and uses her private key to
+    #    derive the same shared secret.
+    print("\nAlice is decapsulating the secret with her private key...")
+    shared_secret_alice = server_crypto._kem.decap_secret(encapsulated_secret)
+    print(f"Alice's shared secret (first 16 bytes): {shared_secret_alice[:16].hex()}...")
+
+    # 4. Verify correctness of the KEM
+    assert shared_secret_alice == shared_secret_bob
+    print("\n--- KEM Self-Test PASSED: Alice's and Bob's shared secrets match. ---")
+
+    # 5. Test the full encrypt/decrypt cycle from the class
+    print("\n--- Testing full KEM-DEM encrypt/decrypt cycle ---")
+    original_data = b"This is a top secret message for the full cycle test."
     print(f"Original data: {original_data.decode()}")
-
-    # 3. The client uses the server's public key to encrypt.
-    # (In our app, the server does this for data it's storing for itself)
-    encapsulated_secret, encrypted_data = server_crypto.encrypt(original_data)
-
-    print(f"\nEncapsulated Secret (first 16 bytes): {encapsulated_secret[:16].hex()}...")
-    print(f"Encrypted Data (first 16 bytes): {encrypted_data[:16].hex()}...")
-
-    # 4. The server receives the data and uses its private key to decrypt.
-    decrypted_data = server_crypto.decrypt(encapsulated_secret, encrypted_data)
-    print(f"\nDecrypted data: {decrypted_data.decode()}")
-
-    # 5. Verify correctness
-    assert original_data == decrypted_data
-    print("\n--- Self-Test PASSED: Original and decrypted data match. ---")
+    encapsulated, encrypted = server_crypto.encrypt(original_data)
+    decrypted = server_crypto.decrypt(encapsulated, encrypted)
+    print(f"Decrypted data: {decrypted.decode()}")
+    assert original_data == decrypted
+    print("--- Full cycle test PASSED. ---")

@@ -10,7 +10,7 @@ The user interface has been redesigned with a theme inspired by the game *Hollow
 
 ## 2. How to Run the Demonstration
 
-**Prerequisite:** You must be using a **Debian-based Linux** environment (e.g., Kali, Ubuntu) running in WSL.
+**Prerequisite:** You must be using **Ubuntu** (or another Debian-based Linux environment) running in WSL.
 
 **Working Directory:** All commands must be run from the **root of the `op-quantum` repository**.
 
@@ -51,8 +51,9 @@ Before running the attacker scripts, you need to identify the IP address of your
 
 ```bash
 # This command finds the most likely IP address and saves it to a variable
-export KALI_IP=$(hostname -I | awk '{print $1}')
-echo "Your IP address is: ${KALI_IP}"
+# This command finds the most likely IP address and saves it to a variable
+export ATTACKER_IP=$(hostname -I | awk '{print $1}')
+echo "Your IP address is: ${ATTACKER_IP}"
 ```
 *You must run this command in the same terminal you use to run the attacker scripts below.*
 
@@ -61,23 +62,23 @@ echo "Your IP address is: ${KALI_IP}"
 *   **Goal:** Demonstrate that both servers share an identical application-layer vulnerability. This test isolates PQC as a cryptographic defense, not a fix for all security issues.
 *   **Action on Server A:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://${KALI_IP}:8443
+    python3 pqc-project/attacker/sql_injector.py https://${ATTACKER_IP}:8443
     ```
 *   **Expected Outcome on Server A:** The script will successfully dump table names and user data from the database. The retrieved data will be in plain text.
 *   **Action on Server B:**
     ```bash
-    python3 pqc-project/attacker/sql_injector.py https://${KALI_IP}:9443
+    python3 pqc-project/attacker/sql_injector.py https://${ATTACKER_IP}:9443
     ```
 *   **Expected Outcome on Server B:** The script will also succeed. This is intentional. The key difference is that any PQC-encrypted data in the database remains secure, even when retrieved.
 
 *   **Goal:** Demonstrate the servers crashing after being overwhelmed by traffic.
 *   **Action (Server A):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${KALI_IP}:8443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${ATTACKER_IP}:8443/ -w 5000 -d 120
     ```
 *   **Action (Server B):**
     ```bash
-    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${KALI_IP}:9443/ -w 5000 -d 120
+    python3 pqc-project/attacker/HULK-LORIS-ULTRA.py https://${ATTACKER_IP}:9443/ -w 5000 -d 120
     ```
 *   **Expected Outcome:** The Nginx process will be terminated. The script in the corresponding terminal will exit.
 

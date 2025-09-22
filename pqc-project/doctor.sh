@@ -63,7 +63,7 @@ if [ "$all_ok" = true ]; then
     echo ">>> You should be able to proceed with the setup and build."
 else
     echo ">>> ERROR: One or more required commands were not found."
-    echo ">>> This indicates that './setup_kali.sh' did not complete successfully,"
+    echo ">>> This indicates that './setup_ubuntu.sh' did not complete successfully,"
     echo ">>> or you need to open a new terminal for the changes to take effect."
     echo ">>> Please ensure the setup script runs without errors, then open a new"
     echo ">>> terminal session and run this doctor script again."
