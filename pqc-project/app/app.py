@@ -69,7 +69,7 @@ def messaging():
         session['username'] = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
     db = get_db()
     # By default, show all users in the database.
-    all_users = db.execute("SELECT username, password FROM users ORDER BY username").fetchall()
+    all_users = db.execute("SELECT username FROM users ORDER BY username").fetchall()
     return render_template('messaging.html', all_users=all_users, app_mode=APP_MODE)
 
 @app.route('/search', methods=['POST'])
@@ -82,13 +82,13 @@ def search():
 
     # --- INTENTIONAL VULNERABILITY ---
     # This query is intentionally vulnerable to SQL Injection for demonstration purposes.
-    vulnerable_query = "SELECT username, password FROM users WHERE username LIKE '%" + search_term + "%'"
+    vulnerable_query = "SELECT username FROM users WHERE username LIKE '%" + search_term + "%'"
     # --- END INTENTIONAL VULNERABILITY ---
 
     search_results = db.execute(vulnerable_query).fetchall()
 
     # Also fetch all users so the list can be repopulated if the search is cleared
-    all_users = db.execute("SELECT username, password FROM users ORDER BY username").fetchall()
+    all_users = db.execute("SELECT username FROM users ORDER BY username").fetchall()
 
     # Render the same template, but pass the search_results variable
     return render_template('messaging.html', search_results=search_results, all_users=all_users, app_mode=APP_MODE)
@@ -197,7 +197,7 @@ def main():
     print(f"Database path: {DB_PATH}")
     print(f"=========================================")
 
-    app.run(host='127.0.0.1', port=args.port, debug=True)
+    app.run(host='0.0.0.0', port=args.port, debug=True)
 
 if __name__ == '__main__':
     main()
