@@ -76,10 +76,9 @@ cd ${SRC_DIR}/openssl
 make -j$(nproc)
 make install_sw
 echo ">>> Creating custom openssl.cnf from template..."
-CONFIG_FILE="${INSTALL_DIR}/ssl/openssl.cnf"
+CONFIG_FILE="${INSTALL_DIR}/openssl.cnf"
 MODULE_PATH="${INSTALL_DIR}/lib64/ossl-modules/oqsprovider.so"
-# Create the directory and copy the template
-mkdir -p "${INSTALL_DIR}/ssl"
+# Copy the template to the correct path for this build
 cp "${SCRIPT_DIR}/openssl.cnf.template" "${CONFIG_FILE}"
 # Replace the placeholder with the absolute path to the provider module
 sed -i "s|OQS_PROVIDER_MODULE_PATH_PLACEHOLDER|${MODULE_PATH}|g" "${CONFIG_FILE}"
