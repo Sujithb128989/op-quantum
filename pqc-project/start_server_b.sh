@@ -52,7 +52,7 @@ mkdir -p "${NGINX_INSTALL_DIR}/pids"
 cp "${TEMP_NGINX_CONF}" "${NGINX_INSTALL_DIR}/conf/nginx.conf"
 rm "${TEMP_NGINX_CONF}" # Clean up temp file
 # The -p flag sets the prefix path, and Nginx will now find its config by default
-sudo ${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
+${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/
 
 # Wait a moment for Nginx to start
 sleep 2
