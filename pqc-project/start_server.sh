@@ -49,16 +49,19 @@ if [ ! -f "${CERT_FILE}" ] || [ ! -f "${KEY_FILE}" ]; then
 fi
 
 # --- Dynamic Nginx Configuration ---
-TEMP_NGINX_CONF=$(mktemp)
-sed "s|__CERT_PATH__|${CERT_FILE}|g; s|__KEY_PATH__|${KEY_FILE}|g" "${NGINX_CONF_PATH}" > "${TEMP_NGINX_CONF}"
+# Generate the final nginx.conf file with the correct, absolute certificate paths.
+FINAL_NGINX_CONF="${NGINX_INSTALL_DIR}/conf/nginx.conf"
+sed "s|__CERT_PATH__|${CERT_FILE}|g; s|__KEY_PATH__|${KEY_FILE}|g" "${NGINX_CONF_PATH}" > "${FINAL_NGINX_CONF}"
 
 # --- Start Nginx ---
 echo ">>> Starting Nginx for ${SERVER_NAME}..."
-${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/ -c "${TEMP_NGINX_CONF}" -g 'daemon off;' &
+# The config file is now in the correct location, so Nginx will find it automatically
+# when using the -p prefix path flag.
+${NGINX_INSTALL_DIR}/sbin/nginx -p ${NGINX_INSTALL_DIR}/ -g 'daemon off;' &
 NGINX_PID=$!
 
 # --- Cleanup ---
-trap 'echo ">>> Shutting down ${SERVER_NAME}..."; kill ${NGINX_PID}; rm -f "${TEMP_NGINX_CONF}";' EXIT
+trap 'echo ">>> Shutting down ${SERVER_NAME}..."; kill ${NGINX_PID};' EXIT
 
 # --- Start Python Backend ---
 echo ">>> Starting Python backend for ${SERVER_NAME} in '${APP_MODE}' mode..."
