@@ -1,0 +1,41 @@
+#
+# OpenSSL configuration file template.
+#
+# This file is used by the build script to create the final openssl.cnf
+# for the PQC-enabled server. It configures OpenSSL to load both the
+# default and OQS providers automatically.
+#
+
+# This section is needed to point to the provider configuration
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+# This section defines the providers that will be loaded
+[provider_sect]
+default = default_sect
+oqsprovider = oqs_sect
+
+# This section activates the default provider
+[default_sect]
+activate = 1
+
+# This section activates the OQS provider.
+# The module path will be replaced by the build script.
+[oqs_sect]
+activate = 1
+module = OQS_PROVIDER_MODULE_PATH_PLACEHOLDER
+
+# Default settings for the `req` command.
+# These are mostly boilerplate as we override them on the command-line,
+# but they are required for the command to run.
+[ req ]
+default_bits        = 2048
+distinguished_name  = req_distinguished_name
+prompt              = no
+
+[ req_distinguished_name ]
+# This can be left blank as we use the -subj flag in the command.
+# At least one entry is required.
+C = US

@@ -30,10 +30,8 @@ echo ">>> Server A certificate created successfully."
 # --- Server B: PQC-Hybrid Certificate ---
 echo ">>> Generating PQC-signed certificate for Server B..."
 
-# Define paths to our custom PQC-enabled OpenSSL and the provider module
+# Define path to our custom PQC-enabled OpenSSL
 PQC_OPENSSL="${SERVER_B_DIR}/install/bin/openssl"
-PROVIDER_MODULE_PATH="${SERVER_B_DIR}/install/lib64/ossl-modules"
-PROVIDER_MODULE_NAME="oqsprovider"
 
 if [ ! -f "${PQC_OPENSSL}" ]; then
     echo "ERROR: PQC-enabled OpenSSL not found at '${PQC_OPENSSL}'"
@@ -41,25 +39,10 @@ if [ ! -f "${PQC_OPENSSL}" ]; then
     exit 1
 fi
 
-if [ ! -f "${PROVIDER_MODULE_PATH}/${PROVIDER_MODULE_NAME}.so" ]; then
-    echo "ERROR: OQS Provider module not found at '${PROVIDER_MODULE_PATH}/${PROVIDER_MODULE_NAME}.so'"
-    echo "Please ensure the Server B build completed successfully."
-    exit 1
-fi
-
-echo "--- DIAGNOSTIC: Checking OQS Provider availability ---"
-echo "--- Listing providers ---"
-${PQC_OPENSSL} list -providers -provider-path ${PROVIDER_MODULE_PATH} -provider default -provider ${PROVIDER_MODULE_NAME}
-echo "--- Listing signature algorithms ---"
-${PQC_OPENSSL} list -signature-algorithms -provider-path ${PROVIDER_MODULE_PATH} -provider default -provider ${PROVIDER_MODULE_NAME}
-echo "--- END DIAGNOSTIC ---"
-
 # Generate a key using the Dilithium3 PQC signature algorithm.
-# We use -provider-path and -provider to explicitly load our custom module.
+# The custom openssl.cnf created by the build script will automatically
+# load the required default and OQS providers.
 ${PQC_OPENSSL} req -x509 -newkey dilithium3 -nodes -days 365 \
-    -provider-path ${PROVIDER_MODULE_PATH} \
-    -provider default \
-    -provider ${PROVIDER_MODULE_NAME} \
     -keyout ${SERVER_B_DIR}/server_b.key \
     -out ${SERVER_B_DIR}/server_b.crt \
     -subj "/CN=localhost"
