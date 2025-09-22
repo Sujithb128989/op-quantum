@@ -15,10 +15,19 @@ class PQCrypto:
           this private key would be stored securely and loaded, not generated
           on each run. For this demo, we generate it once per server instance.
         """
-        self._kem = oqs.KEM("Kyber768")
+        # Per expert advice, dynamically discover the supported KEM algorithm name
+        enabled_kems = oqs.get_enabled_kem_mechanisms()
+        if "ML-KEM-768" in enabled_kems:
+            kem_alg = "ML-KEM-768"
+        elif "Kyber768" in enabled_kems:
+            kem_alg = "Kyber768"
+        else:
+            raise RuntimeError(f"Neither ML-KEM-768 nor Kyber768 are enabled in this build of liboqs. Enabled KEMs: {enabled_kems}")
+
+        self._kem = oqs.KeyEncapsulation(kem_alg)
         self.public_key = self._kem.generate_keypair()
         # Note: self._kem retains the private key internally after keypair generation.
-        print("PQC Crypto module initialized with Kyber768.")
+        print(f"PQC Crypto module initialized with {kem_alg}.")
 
     def encrypt(self, plaintext: bytes) -> tuple[bytes, bytes]:
         """

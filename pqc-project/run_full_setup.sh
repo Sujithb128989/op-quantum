@@ -49,6 +49,13 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r ${PROJECT_DIR}/app/requirements.txt
 pip install -r ${PROJECT_DIR}/attacker/requirements.txt
+echo ">>> Installing 'oqs' package from source..."
+# Clone and install the Python OQS library from source to ensure we have the correct version
+OQS_PYTHON_SRC_DIR="${PROJECT_DIR}/src/liboqs-python"
+if [ ! -d "${OQS_PYTHON_SRC_DIR}" ]; then
+    git clone --depth=1 https://github.com/open-quantum-safe/liboqs-python "${OQS_PYTHON_SRC_DIR}"
+fi
+pip install "${OQS_PYTHON_SRC_DIR}"
 deactivate
 echo ">>> Python environment setup complete."
 
