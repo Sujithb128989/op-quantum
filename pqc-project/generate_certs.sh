@@ -47,6 +47,13 @@ if [ ! -f "${PROVIDER_MODULE_PATH}/${PROVIDER_MODULE_NAME}.so" ]; then
     exit 1
 fi
 
+echo "--- DIAGNOSTIC: Checking OQS Provider availability ---"
+echo "--- Listing providers ---"
+${PQC_OPENSSL} list -providers -provider-path ${PROVIDER_MODULE_PATH} -provider ${PROVIDER_MODULE_NAME}
+echo "--- Listing signature algorithms ---"
+${PQC_OPENSSL} list -signature-algorithms -provider-path ${PROVIDER_MODULE_PATH} -provider ${PROVIDER_MODULE_NAME}
+echo "--- END DIAGNOSTIC ---"
+
 # Generate a key using the Dilithium3 PQC signature algorithm.
 # We use -provider-path and -provider to explicitly load our custom module.
 ${PQC_OPENSSL} req -x509 -newkey dilithium3 -nodes -days 365 \
