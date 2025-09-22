@@ -30,8 +30,9 @@ cleanup() {
 trap cleanup EXIT
 
 # --- Pre-flight Checks ---
-CERT_FILE="${PROJECT_DIR}/server_a.crt"
-KEY_FILE="${PROJECT_DIR}/server_a.key"
+# This path is corrected to point to the server_a subdirectory.
+CERT_FILE="${PROJECT_DIR}/server_a/server_a.crt"
+KEY_FILE="${PROJECT_DIR}/server_a/server_a.key"
 if [ ! -f "${CERT_FILE}" ]; then
     echo ">>> Certificate not found. Please run 'generate_certs.sh' first."
     exit 1
