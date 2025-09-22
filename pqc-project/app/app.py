@@ -22,7 +22,7 @@ DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database.db')
 pqc_crypto_instance = None
 NGINX_PID_FILE = None
 REQUEST_COUNT = 0
-REQUEST_LIMIT = 5000
+REQUEST_LIMIT = 200
 counter_lock = threading.Lock()
 OTHER_SERVER_URL = None
 
