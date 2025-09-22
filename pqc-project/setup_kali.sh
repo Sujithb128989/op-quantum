@@ -23,8 +23,7 @@ sudo apt-get install -y \
     libssl-dev \
     unzip \
     wget \
-    perl \
-    haveged
+    perl
 
 echo "=============================================================="
 echo ">>> Dependency installation complete!"

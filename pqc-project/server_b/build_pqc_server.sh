@@ -75,8 +75,9 @@ cd ${SRC_DIR}/openssl
 ./Configure linux-x86_64 -d --prefix=${INSTALL_DIR} --openssldir=${INSTALL_DIR} shared
 make -j$(nproc)
 make install_sw
-echo ">>> Copying openssl.cnf to installation directory..."
-cp ${SRC_DIR}/openssl/apps/openssl.cnf ${INSTALL_DIR}/openssl.cnf
+echo ">>> Copying openssl.cnf to standard installation directory..."
+mkdir -p ${INSTALL_DIR}/ssl
+cp ${SRC_DIR}/openssl/apps/openssl.cnf ${INSTALL_DIR}/ssl/openssl.cnf
 echo ">>> Base OpenSSL installed successfully."
 
 # --- 5. Build and Install liboqs ---
