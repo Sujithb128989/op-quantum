@@ -102,6 +102,10 @@ echo ">>> Manually copying oqsprovider.so to fix installation issue..."
 cp lib/oqsprovider.so ${INSTALL_DIR}/lib64/ossl-modules/
 echo ">>> oqs-provider installed successfully. OpenSSL is now PQC-enabled."
 
+echo "--- DIAGNOSTIC: Listing contents of install directory ---"
+ls -lR ${INSTALL_DIR}
+echo "--- END DIAGNOSTIC ---"
+
 # --- 7. Build and Install Nginx ---
 echo ">>> Step 7: Building and installing Nginx..."
 cd ${BUILD_DIR}
@@ -127,6 +131,13 @@ patchelf --set-rpath "\$ORIGIN/../lib64" "${INSTALL_DIR}/bin/openssl"
 # For the nginx binary in nginx/sbin, the path is two levels up and then into install/lib64
 patchelf --set-rpath "\$ORIGIN/../../install/lib64" "${NGINX_INSTALL_DIR}/sbin/nginx"
 echo ">>> RPATHs set successfully."
+
+echo "--- DIAGNOSTIC: Checking dynamic dependencies ---"
+echo "--- OpenSSL ---"
+ldd "${INSTALL_DIR}/bin/openssl"
+echo "--- Nginx ---"
+ldd "${NGINX_INSTALL_DIR}/sbin/nginx"
+echo "--- END DIAGNOSTIC ---"
 
 
 echo "=================================================="
