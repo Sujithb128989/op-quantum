@@ -35,6 +35,12 @@ echo "=================================================="
 
 # --- Paths ---
 PROJECT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+
+# Ensure the pid/log directories exist for BOTH servers before starting.
+# This prevents a fatal error if the directories are missing, regardless of start order.
+mkdir -p "${PROJECT_DIR}/server_a/nginx/pids" "${PROJECT_DIR}/server_a/nginx/logs"
+mkdir -p "${PROJECT_DIR}/server_b/nginx/pids" "${PROJECT_DIR}/server_b/nginx/logs"
+
 NGINX_INSTALL_DIR="${PROJECT_DIR}/${SERVER_DIR}/nginx"
 NGINX_CONF_PATH="${PROJECT_DIR}/${SERVER_DIR}/nginx.conf"
 APP_PY="${PROJECT_DIR}/app/app.py"
@@ -54,12 +60,6 @@ FINAL_NGINX_CONF="${NGINX_INSTALL_DIR}/conf/nginx.conf"
 sed "s|__CERT_PATH__|${CERT_FILE}|g; s|__KEY_PATH__|${KEY_FILE}|g" "${NGINX_CONF_PATH}" > "${FINAL_NGINX_CONF}"
 
 # --- Start Nginx ---
-# For Server A, ensure the pid/log directories exist before starting.
-# This prevents a fatal error if the directories are missing.
-if [ "$SERVER_ID" == "a" ]; then
-    mkdir -p "${NGINX_INSTALL_DIR}/pids" "${NGINX_INSTALL_DIR}/logs"
-fi
-
 echo ">>> Starting Nginx for ${SERVER_NAME}..."
 # The config file is now in the correct location, so Nginx will find it automatically
 # when using the -p prefix path flag.
