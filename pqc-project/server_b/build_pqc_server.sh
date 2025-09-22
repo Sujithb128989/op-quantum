@@ -122,11 +122,10 @@ cd nginx-${NGINX_VERSION}
 ./configure \
     --prefix=${NGINX_INSTALL_DIR} \
     --with-cc-opt="-I${INSTALL_DIR}/include" \
-    --with-ld-opt="-L${INSTALL_DIR}/lib" \
+    --with-ld-opt="-L${INSTALL_DIR}/lib -Wl,-rpath,${INSTALL_DIR}/lib" \
     --with-http_ssl_module \
     --with-pcre=${BUILD_DIR}/pcre-${PCRE_VERSION} \
-    --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION} \
-    --with-openssl=${SRC_DIR}/openssl
+    --with-zlib=${BUILD_DIR}/zlib-${ZLIB_VERSION}
 
 make -j$(nproc)
 make install
