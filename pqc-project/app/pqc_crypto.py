@@ -15,7 +15,7 @@ class PQCrypto:
           this private key would be stored securely and loaded, not generated
           on each run. For this demo, we generate it once per server instance.
         """
-        self._kem = oqs.KeyEncapsulation("Kyber768")
+        self._kem = oqs.KEM("Kyber768")
         self.public_key = self._kem.generate_keypair()
         # Note: self._kem retains the private key internally after keypair generation.
         print("PQC Crypto module initialized with Kyber768.")
