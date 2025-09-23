@@ -22,18 +22,13 @@ while true; do
   # Check if the log file exists yet
   if [ -f "$LOG_FILE" ]; then
     # Get the line count (number of requests)
-    # Use awk for efficiency, as it stops after counting
     LINE_COUNT=$(wc -l < "$LOG_FILE" | tr -d ' ')
 
     if [ "$LINE_COUNT" -ge "$MAX_REQUESTS" ]; then
-      echo ">>> Request limit of ${MAX_REQUESTS} reached for ${LOG_FILE}. Shutting down server."
-      # Read PID from file and kill the process
-      if [ -f "$PID_FILE" ]; then
-        kill $(cat "$PID_FILE")
-        echo ">>> Shutdown signal sent."
-      else
-        echo ">>> PID file ${PID_FILE} not found!"
-      fi
+      echo "server crashed"
+      # Kill the parent process (start_server.sh), which will trigger the
+      # trap and clean up everything gracefully. This is like sending Ctrl+C.
+      kill $PPID
       break # Exit the watcher script
     fi
   fi
